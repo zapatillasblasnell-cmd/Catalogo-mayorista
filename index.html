@@ -121,7 +121,7 @@
           id="headerLogoWrapper" 
           onclick="handleLogoSecretClicks()" 
           class="flex-1 max-w-[210px] md:max-w-[280px] h-10 md:h-12 flex items-center justify-center mx-2 cursor-pointer group"
-          title="Toca 4 veces para acceso administrativo"
+          title="Logotipo"
         >
           <img 
             id="headerLogoImg" 
@@ -135,18 +135,6 @@
         </div>
 
         <div class="flex items-center space-x-2">
-          <!-- Botón Admin Privado: SOLO visible tras autenticarse con PIN -->
-          <button 
-            type="button" 
-            id="adminNavBadgeBtn"
-            onclick="openAdminPanelModal()" 
-            class="hidden bg-slate-900 hover:bg-slate-800 text-amber-400 border border-slate-700 px-3 py-1.5 rounded-xl text-xs font-black shadow-xs flex items-center space-x-1.5 transition active:scale-95"
-            title="Panel de Administración"
-          >
-            <i data-lucide="sliders" class="w-3.5 h-3.5"></i>
-            <span class="hidden sm:inline">Admin</span>
-          </button>
-
           <!-- Carrito de Compras en la esquina superior -->
           <button 
             type="button" 
@@ -336,17 +324,6 @@
             <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
           </a>
         </div>
-      </div>
-
-      <!-- Enlace discreto al Panel de Control en el fondo (Protegido por PIN) -->
-      <div class="text-center pt-2">
-        <button 
-          type="button" 
-          onclick="requestAdminAccess()" 
-          class="text-[10px] md:text-xs text-slate-400 hover:text-slate-600 font-semibold uppercase tracking-wider transition"
-        >
-          Acceso Propietario / Administración
-        </button>
       </div>
     </footer>
   </div>
@@ -557,20 +534,20 @@
       </div>
     </div>
   </div>
-          <a 
-            id="linkInstagram" 
-            href="https://instagram.com" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            class="w-10 h-10 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center hover:bg-rose-100 hover:scale-105 active:scale-95 transition shadow-2xs"
-            title="Instagram"
-          >
-            <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
-          </a>
+
+  <!-- ========================================== -->
+  <!-- MODAL: AUTENTICACIÓN PROPIETARIO (PIN PRIVADO) -->
+  <!-- ========================================== -->
+  <div id="adminAuthModal" class="fixed inset-0 z-55 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white w-full max-w-sm rounded-3xl p-6 space-y-4 shadow-2xl relative border border-slate-100">
+      <div class="flex items-center justify-between">
+        <div class="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
+          <i data-lucide="lock" class="w-5 h-5"></i>
         </div>
+        <button type="button" onclick="closeAdminAuthModal()" class="text-slate-400 hover:text-slate-700 p-1 rounded-full">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
       </div>
-    </footer>
-  </div>
       <div>
         <h3 class="text-base font-black text-slate-900">Acceso Propietario</h3>
         <p class="text-xs text-slate-500 mt-0.5">Ingresa tu contraseña o PIN alfanumérico (letras y números).</p>
@@ -1195,8 +1172,18 @@
       initHeroAutoCycle();
       initDetailSwipeAndHistory();
       checkAdminSecretQuery();
-      checkAdminSessionState();
+      initKeyboardAdminShortcut();
     };
+
+    function initKeyboardAdminShortcut() {
+      window.addEventListener('keydown', (e) => {
+        // Atajo de teclado interno: Ctrl+Shift+A o Cmd+Shift+A
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
+          e.preventDefault();
+          requestAdminAccess();
+        }
+      });
+    }
 
     function applyCurrentPaletteCss() {
       const p = appData.palette || DEFAULT_DATA.palette;
@@ -2172,7 +2159,7 @@
     }
 
     // ----------------------------------------------------
-    // SISTEMA DE SEGURIDAD & AUTENTICACIÓN ADMIN
+    // SISTEMA DE SEGURIDAD & AUTENTICACIÓN ADMIN (100% INTERNO)
     // ----------------------------------------------------
     function checkAdminSecretQuery() {
       try {
@@ -2184,11 +2171,7 @@
     }
 
     function checkAdminSessionState() {
-      const isAuth = sessionStorage.getItem('kicks_admin_auth_active') === 'true';
-      const badgeBtn = document.getElementById("adminNavBadgeBtn");
-      if (badgeBtn) {
-        badgeBtn.classList.toggle("hidden", !isAuth);
-      }
+      // El estado es puramente interno; ningún botón o indicador se expone en la interfaz pública
     }
 
     function requestAdminAccess() {
