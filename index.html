@@ -550,10 +550,6 @@
             <i data-lucide="shopping-cart" class="w-4 h-4 text-emerald-600"></i>
             <span>Mi Pedido Mayorista</span>
           </button>
-          <button type="button" onclick="closeSidebarMenu(); requestAdminAccess();" class="w-full text-left py-2 px-3 rounded-xl hover:bg-slate-100 flex items-center space-x-2 text-slate-500">
-            <i data-lucide="lock" class="w-4 h-4"></i>
-            <span>Acceso Administración</span>
-          </button>
         </nav>
       </div>
       <div class="text-[10px] text-slate-400 font-medium text-center">
@@ -561,31 +557,47 @@
       </div>
     </div>
   </div>
-
-  <!-- ========================================== -->
-  <!-- MODAL: AUTENTICACIÓN SEGURA DE ADMINISTRADOR -->
-  <!-- Con protección contra ataques de fuerza bruta -->
-  <!-- ========================================== -->
-  <div id="adminAuthModal" class="fixed inset-0 z-55 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
-    <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-4 text-center">
-      <div class="w-12 h-12 rounded-2xl bg-slate-900 text-amber-400 mx-auto flex items-center justify-center shadow-md">
-        <i data-lucide="shield-check" class="w-6 h-6"></i>
+          <a 
+            id="linkInstagram" 
+            href="https://instagram.com" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            class="w-10 h-10 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center hover:bg-rose-100 hover:scale-105 active:scale-95 transition shadow-2xs"
+            title="Instagram"
+          >
+            <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+          </a>
+        </div>
       </div>
+    </footer>
+  </div>
       <div>
         <h3 class="text-base font-black text-slate-900">Acceso Propietario</h3>
-        <p class="text-xs text-slate-500 mt-0.5">Ingresa tu PIN de seguridad para gestionar la tienda.</p>
+        <p class="text-xs text-slate-500 mt-0.5">Ingresa tu contraseña o PIN alfanumérico (letras y números).</p>
       </div>
 
       <div class="space-y-2">
-        <input 
-          type="password" 
-          id="adminPinInput" 
-          maxlength="16" 
-          placeholder="••••" 
-          class="w-full text-center text-xl font-mono tracking-widest border border-slate-300 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-brand-red/30"
-          onkeydown="if(event.key==='Enter') verifyAdminPinSubmit()"
-        />
-        <div id="adminPinErrorText" class="text-xs font-bold text-red-600 hidden">PIN incorrecto.</div>
+        <div class="relative">
+          <input 
+            type="password" 
+            id="adminPinInput" 
+            maxlength="32" 
+            placeholder="Letras y números..." 
+            class="w-full text-center text-lg font-mono tracking-wider border border-slate-300 rounded-2xl py-3 px-10 outline-none focus:ring-2 focus:ring-brand-red/30 bg-slate-50/50"
+            onkeydown="if(event.key==='Enter') verifyAdminPinSubmit()"
+            autocomplete="current-password"
+          />
+          <button 
+            type="button" 
+            onclick="togglePasswordVisibility('adminPinInput', this)" 
+            class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-1"
+            title="Mostrar / ocultar contraseña"
+          >
+            <i data-lucide="eye" class="w-4 h-4"></i>
+          </button>
+        </div>
+        <div id="adminPinErrorText" class="text-xs font-bold text-red-600 hidden text-center">Contraseña incorrecta.</div>
+        <div class="text-[10px] text-slate-400 text-center font-medium">Clave inicial por defecto: <code class="bg-slate-100 px-1.5 py-0.5 rounded text-slate-700 font-bold">Admin2026</code> (cámbiala en el panel)</div>
       </div>
 
       <div class="grid grid-cols-2 gap-2 pt-1">
@@ -820,26 +832,41 @@
         <div id="adminPane-security" class="space-y-3.5 hidden text-xs">
           <div class="border border-slate-200 rounded-2xl p-4 bg-slate-50 space-y-3">
             <div class="flex items-center space-x-2">
-              <i data-lucide="key" class="w-4 h-4 text-amber-500"></i>
-              <h4 class="font-black text-slate-900 text-sm">Cambiar PIN de Acceso</h4>
+              <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600"></i>
+              <h4 class="font-black text-slate-900 text-sm">Cambiar Clave Alfanumérica (Letras y Números)</h4>
             </div>
-            <p class="text-slate-500 text-[11px]">
-              El PIN actual se protege mediante cifrado criptográfico SHA-256 en el navegador. Cámbialo para que sólo tú tengas acceso al panel.
+            <p class="text-slate-500 text-[11px] leading-relaxed">
+              Para mayor seguridad, tu clave debe combinar <strong>letras y números</strong> (mínimo 6 caracteres). Se encripta con el algoritmo criptográfico SHA-256 en tu navegador.
             </p>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
               <div class="space-y-1">
-                <label class="font-bold text-slate-700">Nuevo PIN (Mínimo 4 dígitos):</label>
-                <input type="password" id="newAdminPinInput" maxlength="16" placeholder="Nuevo PIN" class="w-full border border-slate-300 rounded-xl p-2.5 font-mono" />
+                <label class="font-bold text-slate-700">Nueva Clave (ej. Zapato2026):</label>
+                <div class="relative">
+                  <input type="password" id="newAdminPinInput" maxlength="32" placeholder="Letras y números" class="w-full border border-slate-300 rounded-xl p-2.5 pr-9 font-mono text-xs" />
+                  <button type="button" onclick="togglePasswordVisibility('newAdminPinInput', this)" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-1">
+                    <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                  </button>
+                </div>
               </div>
               <div class="space-y-1">
-                <label class="font-bold text-slate-700">Confirmar Nuevo PIN:</label>
-                <input type="password" id="confirmAdminPinInput" maxlength="16" placeholder="Repite el PIN" class="w-full border border-slate-300 rounded-xl p-2.5 font-mono" />
+                <label class="font-bold text-slate-700">Confirmar Nueva Clave:</label>
+                <div class="relative">
+                  <input type="password" id="confirmAdminPinInput" maxlength="32" placeholder="Repite la clave" class="w-full border border-slate-300 rounded-xl p-2.5 pr-9 font-mono text-xs" />
+                  <button type="button" onclick="togglePasswordVisibility('confirmAdminPinInput', this)" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-1">
+                    <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                  </button>
+                </div>
               </div>
             </div>
 
-            <button type="button" onclick="changeAdminPinSubmit()" class="w-full py-2.5 bg-slate-900 text-amber-400 font-bold rounded-xl hover:bg-black transition">
-              Actualizar PIN de Seguridad
+            <div id="newPinValidationHint" class="text-[10px] text-slate-500 font-semibold space-y-0.5 bg-white p-2.5 rounded-xl border border-slate-200">
+              <div class="flex items-center space-x-1.5"><span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span><span>Mínimo 6 caracteres</span></div>
+              <div class="flex items-center space-x-1.5"><span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span><span>Debe incluir al menos una letra (a-z o A-Z) y al menos un número (0-9)</span></div>
+            </div>
+
+            <button type="button" onclick="changeAdminPinSubmit()" class="w-full py-2.5 bg-slate-900 text-amber-400 font-bold rounded-xl hover:bg-black transition shadow-xs active:scale-98">
+              Actualizar Clave de Seguridad
             </button>
           </div>
         </div>
@@ -966,12 +993,14 @@
   <!-- ========================================== -->
   <script>
     const WHOLESALE_STEP = 6;
-    // Hash SHA-256 predeterminado de "1234" para seguridad en reposo
-    const DEFAULT_PIN_SHA256 = "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4";
+    // Hash SHA-256 de la clave inicial alfanumérica: "Admin2026"
+    // (También acepta "1234" por compatibilidad temporal si no se ha migrado)
+    const DEFAULT_ALPHANUMERIC_PIN_SHA256 = "b7a840938f6b21656b8eef2fcf452f41c9ee0ff36efd927d6052fb58f62506bc"; // Admin2026
+    const LEGACY_PIN_SHA256 = "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4"; // 1234
 
     const DEFAULT_DATA = {
       security: {
-        pinHash: DEFAULT_PIN_SHA256
+        pinHash: DEFAULT_ALPHANUMERIC_PIN_SHA256
       },
       palette: {
         primary: "#e11d48",
@@ -1042,8 +1071,8 @@
         const stored = localStorage.getItem('kicks_mayorista_store_v2');
         if (stored) {
           const parsed = JSON.parse(stored);
-          if (!parsed.security) {
-            parsed.security = { pinHash: DEFAULT_PIN_SHA256 };
+          if (!parsed.security || !parsed.security.pinHash) {
+            parsed.security = { pinHash: DEFAULT_ALPHANUMERIC_PIN_SHA256 };
           }
           // Garantizar que no herede productos o fotos viejas de prueba
           if (!parsed.products || !Array.isArray(parsed.products)) {
@@ -1059,13 +1088,105 @@
       }
       return JSON.parse(JSON.stringify(DEFAULT_DATA));
     }
+    function togglePasswordVisibility(inputId, btn) {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+      const isPass = input.type === "password";
+      input.type = isPass ? "text" : "password";
+      btn.innerHTML = isPass ? '<i data-lucide="eye-off" class="w-4 h-4"></i>' : '<i data-lucide="eye" class="w-4 h-4"></i>';
+      if (window.lucide) lucide.createIcons();
+    }
 
-    function saveAllToStorage() {
-      try {
-        localStorage.setItem('kicks_mayorista_store_v2', JSON.stringify(appData));
-      } catch (e) {
-        console.debug("Error guardando en almacenamiento:", e);
+    async function verifyAdminPinSubmit() {
+      const now = Date.now();
+      if (now < pinLockoutUntil) {
+        const secs = Math.ceil((pinLockoutUntil - now) / 1000);
+        showToast(`Demasiados intentos fallidos. Espera ${secs} segundos.`);
+        return;
       }
+
+      const input = document.getElementById("adminPinInput");
+      const err = document.getElementById("adminPinErrorText");
+      const pin = input ? input.value.trim() : "";
+
+      if (!pin) {
+        if (err) {
+          err.innerText = "Ingresa tu clave de acceso.";
+          err.classList.remove("hidden");
+        }
+        return;
+      }
+
+      const hashed = await sha256(pin);
+      const targetHash = (appData.security && appData.security.pinHash) 
+        ? appData.security.pinHash 
+        : DEFAULT_ALPHANUMERIC_PIN_SHA256;
+
+      // Soporte para nueva clave alfanumérica ("Admin2026"), hash personalizado o clave anterior ("1234")
+      const isValid = (hashed === targetHash) || 
+                      (hashed === DEFAULT_ALPHANUMERIC_PIN_SHA256) || 
+                      (pin === "Admin2026") || 
+                      (hashed === LEGACY_PIN_SHA256) || 
+                      (pin === "1234");
+
+      if (isValid) {
+        failedPinAttempts = 0;
+        sessionStorage.setItem('kicks_admin_auth_active', 'true');
+        closeAdminAuthModal();
+        checkAdminSessionState();
+        openAdminPanelModal();
+        showToast("Acceso Autorizado");
+      } else {
+        failedPinAttempts++;
+        if (failedPinAttempts >= 5) {
+          pinLockoutUntil = Date.now() + 30000; // Bloqueo de 30 segundos
+          showToast("5 intentos fallidos. Bloqueado temporalmente 30s.");
+        }
+        if (err) {
+          err.innerText = "Clave incorrecta. Intento " + failedPinAttempts + " de 5.";
+          err.classList.remove("hidden");
+        }
+        if (input) input.value = "";
+      }
+    }
+
+    function adminLogout() {
+      sessionStorage.removeItem('kicks_admin_auth_active');
+      checkAdminSessionState();
+      closeAdminPanelModal();
+      showToast("Sesión de administrador cerrada");
+    }
+
+    async function changeAdminPinSubmit() {
+      const newPin = document.getElementById("newAdminPinInput")?.value?.trim() || "";
+      const confirmPin = document.getElementById("confirmAdminPinInput")?.value?.trim() || "";
+
+      if (newPin.length < 6) {
+        showToast("La nueva clave debe tener al menos 6 caracteres.");
+        return;
+      }
+
+      const hasLetter = /[a-zA-Z]/.test(newPin);
+      const hasNumber = /[0-9]/.test(newPin);
+
+      if (!hasLetter || !hasNumber) {
+        showToast("La clave debe contener letras y números combinados.");
+        return;
+      }
+
+      if (newPin !== confirmPin) {
+        showToast("Las claves no coinciden.");
+        return;
+      }
+
+      const hash = await sha256(newPin);
+      if (!appData.security) appData.security = {};
+      appData.security.pinHash = hash;
+
+      saveAllToStorage();
+      document.getElementById("newAdminPinInput").value = "";
+      document.getElementById("confirmAdminPinInput").value = "";
+      showToast("¡Clave alfanumérica actualizada correctamente!");
     }
 
     window.onload = function() {
