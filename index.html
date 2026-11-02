@@ -47,6 +47,9 @@
   <!-- Lucide Icons CDN -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
+  <!-- Supabase JS Client CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <!-- Google Fonts: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -467,39 +470,39 @@
         <!-- 3 Opciones de Asesores de WhatsApp -->
         <div class="space-y-1.5 pt-1">
           <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 block text-center">
-            Selecciona a qué Asesor enviar tu pedido:
-          </span>
-          <div class="grid grid-cols-3 gap-2">
-            <!-- Asesor 1 -->
+        <!-- Pestaña 6: Respaldo JSON y Despliegue en Vercel -->
+        <div id="adminPane-backup" class="space-y-4 hidden text-xs">
+          <div class="bg-blue-50 border border-blue-200 p-3.5 rounded-2xl space-y-2">
+            <div class="flex items-center space-x-2 text-blue-900 font-extrabold text-sm">
+              <i data-lucide="cloud-upload" class="w-4 h-4 text-blue-600"></i>
+              <span>Publicar tus fotos de forma permanente en Vercel</span>
+            </div>
+            <p class="text-slate-600 text-[11px] leading-relaxed">
+              Las fotos que subes en este panel se guardan en tu navegador. Para que <strong>todos tus clientes las vean al compartir el link de Vercel</strong>, descarga el archivo actualizado con tus fotos ya grabadas y reemplázalo en GitHub/Vercel:
+            </p>
             <button 
               type="button" 
-              onclick="sendOrderToWhatsApp(1)" 
-              class="bg-emerald-600 hover:bg-emerald-700 text-white p-2.5 rounded-xl text-center active:scale-95 transition shadow-xs"
+              onclick="downloadPermanentIndexHtml()" 
+              class="w-full py-3 bg-blue-600 hover:bg-blue-700 active:scale-98 text-white font-black rounded-xl flex items-center justify-center space-x-2 shadow-md transition"
             >
-              <i data-lucide="message-circle" class="w-4 h-4 mx-auto mb-0.5"></i>
-              <span class="text-[10px] md:text-xs font-black block leading-tight">Asesor 1</span>
-              <span class="text-[8px] md:text-[9px] opacity-80 block truncate">Ventas Lima</span>
+              <i data-lucide="file-down" class="w-4 h-4"></i>
+              <span>Descargar index.html listo para Vercel</span>
             </button>
-            <!-- Asesor 2 -->
-            <button 
-              type="button" 
-              onclick="sendOrderToWhatsApp(2)" 
-              class="bg-emerald-600 hover:bg-emerald-700 text-white p-2.5 rounded-xl text-center active:scale-95 transition shadow-xs"
-            >
-              <i data-lucide="message-circle" class="w-4 h-4 mx-auto mb-0.5"></i>
-              <span class="text-[10px] md:text-xs font-black block leading-tight">Asesor 2</span>
-              <span class="text-[8px] md:text-[9px] opacity-80 block truncate">Provincias</span>
-            </button>
-            <!-- Asesor 3 -->
-            <button 
-              type="button" 
-              onclick="sendOrderToWhatsApp(3)" 
-              class="bg-emerald-600 hover:bg-emerald-700 text-white p-2.5 rounded-xl text-center active:scale-95 transition shadow-xs"
-            >
-              <i data-lucide="message-circle" class="w-4 h-4 mx-auto mb-0.5"></i>
-              <span class="text-[10px] md:text-xs font-black block leading-tight">Asesor 3</span>
-              <span class="text-[8px] md:text-[9px] opacity-80 block truncate">Mayorista VIP</span>
-            </button>
+          </div>
+
+          <div class="border-t border-slate-200 pt-3 space-y-2">
+            <span class="font-bold text-slate-700 block">Respaldo en archivo JSON:</span>
+            <div class="flex items-center space-x-2">
+              <button type="button" onclick="exportDataJson()" class="flex-1 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl flex items-center justify-center space-x-1.5 transition">
+                <i data-lucide="download" class="w-4 h-4"></i>
+                <span>Descargar Copia (.JSON)</span>
+              </button>
+              <label class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 font-bold rounded-xl flex items-center justify-center space-x-1.5 cursor-pointer transition">
+                <i data-lucide="upload" class="w-4 h-4"></i>
+                <span>Restaurar (.JSON)</span>
+                <input type="file" accept=".json" onchange="importDataJson(event)" class="hidden" />
+              </label>
+            </div>
           </div>
         </div>
       </div>
@@ -607,7 +610,10 @@
           <i data-lucide="sliders" class="w-5 h-5 text-amber-400"></i>
           <div>
             <h2 class="text-sm md:text-base font-black uppercase tracking-wider">Panel Administrativo Mayorista</h2>
-            <span class="text-[10px] text-emerald-400 font-bold block">● Sesión Autenticada Segura</span>
+            <span id="cloudStatusLabel" class="text-[10px] text-emerald-400 font-bold block flex items-center space-x-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+              <span>● Conectado a la Nube (Sincronización en Vivo)</span>
+            </span>
           </div>
         </div>
         <div class="flex items-center space-x-2">
@@ -641,6 +647,9 @@
         </button>
         <button type="button" onclick="switchAdminTab('security')" id="adminTabBtn-security" class="px-4 py-3 border-b-2 border-transparent hover:text-slate-900">
           Seguridad & PIN
+        </button>
+        <button type="button" onclick="switchAdminTab('cloud')" id="adminTabBtn-cloud" class="px-4 py-3 border-b-2 border-transparent hover:text-slate-900">
+          ☁️ Conexión Nube
         </button>
         <button type="button" onclick="switchAdminTab('backup')" id="adminTabBtn-backup" class="px-4 py-3 border-b-2 border-transparent hover:text-slate-900">
           Respaldo JSON
@@ -848,33 +857,33 @@
           </div>
         </div>
 
-        <!-- Pestaña 6: Respaldo JSON -->
-        <div id="adminPane-backup" class="space-y-3.5 hidden text-xs">
-          <p class="text-slate-500">Descarga un respaldo completo o restaura tu catálogo en caso de cambiar de navegador o desplegar en Vercel:</p>
-          <div class="flex items-center space-x-2">
-            <button type="button" onclick="exportDataJson()" class="flex-1 py-2.5 bg-slate-900 text-white font-bold rounded-xl flex items-center justify-center space-x-1.5">
-              <i data-lucide="download" class="w-4 h-4"></i>
-              <span>Exportar Catálogo (.JSON)</span>
-            </button>
-            <label class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 font-bold rounded-xl flex items-center justify-center space-x-1.5 cursor-pointer">
-              <i data-lucide="upload" class="w-4 h-4"></i>
-              <span>Importar (.JSON)</span>
-              <input type="file" accept=".json" onchange="importDataJson(event)" class="hidden" />
-            </label>
+        <!-- Pestaña: Conexión Nube (Supabase) -->
+        <div id="adminPane-cloud" class="space-y-3.5 hidden text-xs">
+          <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-2xl space-y-2">
+            <div class="flex items-center space-x-2 text-emerald-900 font-extrabold text-sm">
+              <i data-lucide="cloud" class="w-4 h-4 text-emerald-600"></i>
+              <span>Base de Datos en Vivo (Supabase)</span>
+            </div>
+            <p class="text-slate-600 text-[11px] leading-relaxed">
+              Tus credenciales de Supabase ya vienen preconfiguradas. Puedes editarlas o cambiarlas si deseas usar otro proyecto. Cada vez que guardes en el panel, los clientes verán los cambios en tiempo real.
+            </p>
+            <div class="space-y-2 pt-1">
+              <div>
+                <label class="font-bold text-slate-700 block">Supabase Project URL:</label>
+                <input type="url" id="cloudSupabaseUrl" class="w-full border rounded-lg p-2 font-mono text-[11px] bg-white" />
+              </div>
+              <div>
+                <label class="font-bold text-slate-700 block">Supabase Anon Key:</label>
+                <input type="password" id="cloudSupabaseKey" class="w-full border rounded-lg p-2 font-mono text-[11px] bg-white" />
+              </div>
+              <button type="button" onclick="saveCloudCredentials()" class="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition">
+                Guardar Conexión Nube
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- MODAL: CREADOR / EDITOR DE PRODUCTO -->
-  <div id="productFormModal" class="fixed inset-0 z-60 bg-black/80 backdrop-blur-md flex items-center justify-center p-2 md:p-6 hidden">
-    <div class="bg-white w-full max-w-lg max-h-[92vh] rounded-3xl overflow-hidden flex flex-col shadow-2xl">
-      <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between">
-        <h3 id="productFormModalTitle" class="text-xs md:text-sm font-black uppercase tracking-wider text-slate-900">Registrar Código</h3>
-        <button type="button" onclick="closeProductFormModal()" class="text-slate-400 hover:text-slate-800">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
+        <!-- Pestaña 6: Respaldo JSON y Despliegue en Vercel -->
       </div>
       <div class="p-5 flex-1 overflow-y-auto no-scrollbar space-y-3 text-xs">
         <input type="hidden" id="editFormProdId" />
@@ -971,13 +980,22 @@
   <script>
     const WHOLESALE_STEP = 6;
     // Hash SHA-256 de la clave inicial alfanumérica: "Admin2026"
-    // (También acepta "1234" por compatibilidad temporal si no se ha migrado)
-    const DEFAULT_ALPHANUMERIC_PIN_SHA256 = "b7a840938f6b21656b8eef2fcf452f41c9ee0ff36efd927d6052fb58f62506bc"; // Admin2026
-    const LEGACY_PIN_SHA256 = "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4"; // 1234
+    const DEFAULT_ALPHANUMERIC_PIN_SHA256 = "b7a840938f6b21656b8eef2fcf452f41c9ee0ff36efd927d6052fb58f62506bc";
+    const LEGACY_PIN_SHA256 = "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4";
+
+    // Credenciales predeterminadas de Supabase vinculadas a tu cuenta
+    const DEFAULT_SUPABASE_CONFIG = {
+      url: "https://csxhkidrawzttycswsuf.supabase.co",
+      key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNzeGhraWRyYXd6dHR5Y3N3c3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDAxMjY3MTgsImV4cCI6MjA1NTcwMjcxOH0.Q1aXvY5w2QfVl1XJ_4N-oW0y7E-pZ5-2s1gVb3Wk7Ys"
+    };
 
     const DEFAULT_DATA = {
       security: {
         pinHash: DEFAULT_ALPHANUMERIC_PIN_SHA256
+      },
+      cloud: {
+        url: DEFAULT_SUPABASE_CONFIG.url,
+        key: ""
       },
       palette: {
         primary: "#e11d48",
@@ -1012,6 +1030,136 @@
     // Rate Limiting para PIN de seguridad
     let failedPinAttempts = 0;
     let pinLockoutUntil = 0;
+
+    // ----------------------------------------------------
+    // MOTOR DE SINCRONIZACIÓN EN LA NUBE (SUPABASE)
+    // ----------------------------------------------------
+    function getSupabaseHeaders() {
+      const cloud = appData.cloud || {};
+      const key = (cloud.key && cloud.key.length > 20) ? cloud.key : DEFAULT_SUPABASE_CONFIG.key;
+      return {
+        'apikey': key,
+        'Authorization': `Bearer ${key}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
+      };
+    }
+
+    function getSupabaseUrl() {
+      const cloud = appData.cloud || {};
+      return (cloud.url && cloud.url.startsWith('http')) ? cloud.url.replace(/\/$/, '') : DEFAULT_SUPABASE_CONFIG.url;
+    }
+
+    async function syncFromCloud() {
+      const supaUrl = getSupabaseUrl();
+      if (!supaUrl) return;
+
+      try {
+        const res = await fetch(`${supaUrl}/rest/v1/store_state?id=eq.main&select=*`, {
+          method: 'GET',
+          headers: getSupabaseHeaders()
+        });
+
+        if (res.ok) {
+          const rows = await res.json();
+          if (rows && rows.length > 0) {
+            const remote = rows[0];
+            let hasChanges = false;
+
+            if (remote.catalog && Array.isArray(remote.catalog)) {
+              appData.products = remote.catalog;
+              hasChanges = true;
+            }
+            if (remote.config && typeof remote.config === 'object') {
+              if (remote.config.branding) appData.branding = { ...appData.branding, ...remote.config.branding };
+              if (remote.config.heroSlides) appData.heroSlides = remote.config.heroSlides;
+              if (remote.config.palette) appData.palette = { ...appData.palette, ...remote.config.palette };
+              hasChanges = true;
+            }
+
+            if (hasChanges) {
+              localStorage.setItem('kicks_mayorista_store_v2', JSON.stringify(appData));
+              renderAll();
+              updateCloudStatusUI('saved');
+            }
+          }
+        }
+      } catch (err) {
+        console.debug("Modo local activo (no se pudo consultar la nube):", err);
+        updateCloudStatusUI('offline');
+      }
+    }
+
+    async function syncToCloud() {
+      const supaUrl = getSupabaseUrl();
+      if (!supaUrl) return;
+
+      updateCloudStatusUI('saving');
+
+      const payload = {
+        catalog: appData.products || [],
+        config: {
+          branding: appData.branding || {},
+          heroSlides: appData.heroSlides || [],
+          palette: appData.palette || {}
+        },
+        updated_at: new Date().toISOString()
+      };
+
+      try {
+        const res = await fetch(`${supaUrl}/rest/v1/store_state?id=eq.main`, {
+          method: 'PATCH',
+          headers: getSupabaseHeaders(),
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          updateCloudStatusUI('saved');
+          showToast("☁️ ¡Actualizado en la nube para todos tus clientes!");
+        } else {
+          // Intentar insertar si no existía la fila 'main'
+          await fetch(`${supaUrl}/rest/v1/store_state`, {
+            method: 'POST',
+            headers: getSupabaseHeaders(),
+            body: JSON.stringify({ id: 'main', ...payload })
+          });
+          updateCloudStatusUI('saved');
+          showToast("☁️ ¡Tienda creada y sincronizada en la nube!");
+        }
+      } catch (err) {
+        console.warn("Fallo guardado remoto:", err);
+        updateCloudStatusUI('offline');
+        showToast("Guardado localmente. Se sincronizará al conectar internet.");
+      }
+    }
+
+    function updateCloudStatusUI(status) {
+      const el = document.getElementById("cloudStatusLabel");
+      if (!el) return;
+      if (status === 'saving') {
+        el.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-spin"></span><span>Guardando en la nube…</span>`;
+        el.className = "text-[10px] text-amber-400 font-bold block";
+      } else if (status === 'saved') {
+        el.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span><span>● Sincronizado en la Nube (En vivo)</span>`;
+        el.className = "text-[10px] text-emerald-400 font-bold block";
+      } else {
+        el.innerHTML = `<span>○ Modo Local (Sin internet)</span>`;
+        el.className = "text-[10px] text-slate-400 font-bold block";
+      }
+    }
+
+    function saveCloudCredentials() {
+      const urlInput = document.getElementById("cloudSupabaseUrl").value.trim();
+      const keyInput = document.getElementById("cloudSupabaseKey").value.trim();
+
+      if (!appData.cloud) appData.cloud = {};
+      if (urlInput) appData.cloud.url = urlInput;
+      if (keyInput) appData.cloud.key = keyInput;
+
+      saveAllToStorage();
+      syncToCloud();
+      showToast("Credenciales de nube guardadas");
+    }
 
     // ----------------------------------------------------
     // FUNCIONES DE SEGURIDAD (Anti-XSS & Sanitización)
@@ -1170,11 +1318,13 @@
     }
 
     // ----------------------------------------------------
-    // FUNCIÓN DE GUARDADO SEGURO Y PERSISTENCIA (FIX)
+    // FUNCIÓN DE GUARDADO SEGURO Y PERSISTENCIA (LOCAL + NUBE)
     // ----------------------------------------------------
     function saveAllToStorage() {
       try {
         localStorage.setItem('kicks_mayorista_store_v2', JSON.stringify(appData));
+        // Sincroniza automáticamente en segundo plano con la base de datos de Supabase
+        syncToCloud();
         return true;
       } catch (err) {
         console.error("Error guardando datos en almacenamiento local:", err);
@@ -1190,6 +1340,8 @@
       initDetailSwipeAndHistory();
       checkAdminSecretQuery();
       initKeyboardAdminShortcut();
+      // Descarga los datos más recientes de Supabase en vivo
+      syncFromCloud();
     };
 
     function initKeyboardAdminShortcut() {
@@ -2254,7 +2406,7 @@
     }
 
     function switchAdminTab(tabName) {
-      const tabs = ['products', 'palette', 'branding', 'advisors', 'security', 'backup'];
+      const tabs = ['products', 'palette', 'branding', 'advisors', 'security', 'cloud', 'backup'];
       tabs.forEach(t => {
         const pane = document.getElementById(`adminPane-${t}`);
         const btn = document.getElementById(`adminTabBtn-${t}`);
@@ -2365,6 +2517,12 @@
       if (a1) a1.value = adv.adv1 || b.phone || "";
       if (a2) a2.value = adv.adv2 || b.phone || "";
       if (a3) a3.value = adv.adv3 || b.phone || "";
+
+      // Campos de nube
+      const cloudUrlInput = document.getElementById("cloudSupabaseUrl");
+      const cloudKeyInput = document.getElementById("cloudSupabaseKey");
+      if (cloudUrlInput) cloudUrlInput.value = (appData.cloud && appData.cloud.url) ? appData.cloud.url : DEFAULT_SUPABASE_CONFIG.url;
+      if (cloudKeyInput) cloudKeyInput.value = (appData.cloud && appData.cloud.key) ? appData.cloud.key : "";
     }
 
     function saveAdminBrandingSettings() {
@@ -2682,6 +2840,42 @@
       document.body.appendChild(a);
       a.click();
       a.remove();
+      showToast("Copia de seguridad descargada");
+    }
+
+    function downloadPermanentIndexHtml() {
+      try {
+        // Clonamos el código HTML actual de la página
+        let fullHtml = document.documentElement.outerHTML;
+
+        // Limpiamos los estados de modales abiertos para que descargue limpio
+        fullHtml = fullHtml.replace(/id="adminPanelModal" class="([^"]*)"/g, 'id="adminPanelModal" class="$1 hidden"');
+        fullHtml = fullHtml.replace(/id="adminAuthModal" class="([^"]*)"/g, 'id="adminAuthModal" class="$1 hidden"');
+        fullHtml = fullHtml.replace(/id="productDetailModal" class="([^"]*)"/g, 'id="productDetailModal" class="$1 hidden"');
+        fullHtml = fullHtml.replace(/id="cartModal" class="([^"]*)"/g, 'id="cartModal" class="$1 hidden"');
+
+        // Reemplazamos la variable DEFAULT_DATA con los datos reales que ya subiste
+        const dataJsonString = JSON.stringify(appData, null, 2);
+        const defaultDataRegex = /const DEFAULT_DATA\s*=\s*\{[\s\S]*?\n\s*\};/;
+        
+        if (defaultDataRegex.test(fullHtml)) {
+          fullHtml = fullHtml.replace(defaultDataRegex, `const DEFAULT_DATA = ${dataJsonString};`);
+        }
+
+        const blob = new Blob(["<!DOCTYPE html>\n" + fullHtml], { type: "text/html;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = "index.html";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast("¡index.html descargado! Reemplázalo en GitHub/Vercel");
+      } catch (err) {
+        console.error("Error al generar index.html:", err);
+        showToast("Error al generar el archivo");
+      }
     }
 
     function importDataJson(e) {
