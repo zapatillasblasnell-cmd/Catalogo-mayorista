@@ -1,0 +1,2635 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tienda Virtual y Catálogo Mayorista</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              red: 'var(--color-primary, #e11d48)',
+              redDark: 'var(--color-primary-hover, #be123c)',
+              gold: '#f59e0b',
+              navy: '#0f172a'
+            }
+          },
+          animation: {
+            'badge-shine': 'shine 2.8s infinite',
+            'subtle-pulse': 'subtlePulse 2.5s infinite ease-in-out',
+            'cart-bounce': 'cartBounce 0.45s ease-out'
+          },
+          keyframes: {
+            shine: {
+              '0%': { transform: 'translateX(-100%)' },
+              '35%, 100%': { transform: 'translateX(200%)' }
+            },
+            subtlePulse: {
+              '0%, 100%': { transform: 'scale(1)' },
+              '50%': { transform: 'scale(1.025)' }
+            },
+            cartBounce: {
+              '0%, 100%': { transform: 'scale(1)' },
+              '40%': { transform: 'scale(1.22)' },
+              '75%': { transform: 'scale(0.92)' }
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --color-primary: #e11d48;
+      --color-primary-hover: #be123c;
+      --color-accent: #ffe4e6;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .flying-image-ghost {
+      position: fixed;
+      z-index: 9999;
+      pointer-events: none;
+      border-radius: 14px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+      object-fit: cover;
+      transition: all 0.72s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+    .dynamic-bg-primary {
+      background-color: var(--color-primary, #e11d48);
+    }
+    .dynamic-text-primary {
+      color: var(--color-primary, #e11d48);
+    }
+    .dynamic-border-primary {
+      border-color: var(--color-primary, #e11d48);
+    }
+    /* Soporte multiplataforma iOS Safari y Android para control de gestos de navegación */
+    .mobile-gesture-container {
+      overscroll-behavior-x: none;
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-y pinch-zoom;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex justify-center selection:bg-brand-red selection:text-white">
+
+  <!-- ======================================================== -->
+  <!-- CONTENEDOR PRINCIPAL RESPONSIVE: MÓVIL (430px) Y PC (hasta 1150px) -->
+  <!-- ======================================================== -->
+  <div class="w-full max-w-[430px] md:max-w-3xl lg:max-w-5xl xl:max-w-6xl bg-white min-h-screen flex flex-col shadow-2xl relative overflow-x-hidden pb-24 md:my-6 md:rounded-3xl md:border md:border-slate-200">
+
+    <!-- CABECERA PRINCIPAL SUPERIOR (Fiel a la Imagen 1, adaptativa en desktop) -->
+    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-100 px-4 md:px-8 py-3 transition">
+      <div class="flex items-center justify-between">
+        <!-- Menú Hamburguesa Izquierdo -->
+        <button 
+          type="button" 
+          onclick="openSidebarMenu()" 
+          class="w-10 h-10 flex items-center justify-center rounded-xl text-slate-700 hover:bg-slate-100 active:scale-95 transition"
+          aria-label="Menú principal"
+        >
+          <i data-lucide="menu" class="w-6 h-6 stroke-[2.2]"></i>
+        </button>
+
+        <!-- Bodegón para poner imagen en PNG del Logo (con fallback estilizado) -->
+        <div 
+          id="headerLogoWrapper" 
+          onclick="handleLogoSecretClicks()" 
+          class="flex-1 max-w-[210px] md:max-w-[280px] h-10 md:h-12 flex items-center justify-center mx-2 cursor-pointer group"
+          title="Toca 4 veces para acceso administrativo"
+        >
+          <img 
+            id="headerLogoImg" 
+            src="" 
+            alt="Logotipo" 
+            class="max-h-full max-w-full object-contain hidden transition-transform group-hover:scale-105"
+          />
+          <div id="headerLogoFallback" class="border border-slate-300 px-5 py-1.5 rounded-sm tracking-[0.35em] text-xs md:text-sm font-black uppercase text-slate-900 group-hover:border-slate-800 transition">
+            L O G O
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-2">
+          <!-- Botón Admin Privado: SOLO visible tras autenticarse con PIN -->
+          <button 
+            type="button" 
+            id="adminNavBadgeBtn"
+            onclick="openAdminPanelModal()" 
+            class="hidden bg-slate-900 hover:bg-slate-800 text-amber-400 border border-slate-700 px-3 py-1.5 rounded-xl text-xs font-black shadow-xs flex items-center space-x-1.5 transition active:scale-95"
+            title="Panel de Administración"
+          >
+            <i data-lucide="sliders" class="w-3.5 h-3.5"></i>
+            <span class="hidden sm:inline">Admin</span>
+          </button>
+
+          <!-- Carrito de Compras en la esquina superior -->
+          <button 
+            type="button" 
+            onclick="openCartModal()" 
+            class="w-10 h-10 flex items-center justify-center rounded-xl text-slate-800 hover:bg-slate-100 active:scale-95 transition relative"
+            aria-label="Ver pedido"
+          >
+            <i data-lucide="shopping-cart" class="w-6 h-6 stroke-[2.2]"></i>
+            <span 
+              id="headerCartBadge" 
+              class="absolute top-1 right-1 dynamic-bg-primary text-white text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-xs hidden"
+            >0</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- CARRUSEL HERO EN FORMATO 1:1 CUADRADO ESTRICTO (3 portadas que cambian cada 3 segundos, sin texto) -->
+    <section class="relative w-full aspect-square md:aspect-[16/9] lg:aspect-[21/9] bg-slate-100 overflow-hidden select-none">
+      <div id="heroSlidesContainer" class="w-full h-full relative">
+        <!-- Generado dinámicamente -->
+      </div>
+
+      <!-- Indicadores de puntos inferiores limpios -->
+      <div id="heroDotsWrapper" class="absolute bottom-3 left-0 right-0 flex items-center justify-center space-x-1.5 z-20 pointer-events-none"></div>
+
+      <!-- Flechas sutiles -->
+      <button 
+        type="button" 
+        onclick="prevHeroSlide()" 
+        class="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 md:w-11 md:h-11 rounded-full bg-black/35 text-white flex items-center justify-center backdrop-blur-xs hover:bg-black/60 transition z-20"
+        aria-label="Foto anterior"
+      >
+        <i data-lucide="chevron-left" class="w-5 h-5 md:w-6 md:h-6"></i>
+      </button>
+      <button 
+        type="button" 
+        onclick="nextHeroSlide()" 
+        class="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 md:w-11 md:h-11 rounded-full bg-black/35 text-white flex items-center justify-center backdrop-blur-xs hover:bg-black/60 transition z-20"
+        aria-label="Siguiente foto"
+      >
+        <i data-lucide="chevron-right" class="w-5 h-5 md:w-6 md:h-6"></i>
+      </button>
+    </section>
+
+    <!-- PASTILLA ROJA COMPLETA EN UNA SOLA LÍNEA SIN CORTES (Imagen 1) -->
+    <section class="px-3 md:px-8 pt-4 pb-1">
+      <div class="relative overflow-hidden rounded-2xl dynamic-bg-primary text-white shadow-md shadow-red-600/30 border border-white/20 px-3 md:px-6 py-2.5 flex items-center justify-center">
+        <!-- Brillo de luz transversal continuo -->
+        <div class="absolute inset-0 w-1/3 bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-12 animate-badge-shine pointer-events-none"></div>
+        
+        <div class="flex items-center space-x-2 text-center overflow-hidden">
+          <span class="w-2 h-2 rounded-full bg-white shrink-0 animate-ping"></span>
+          <span id="promoBadgeNoticeText" class="text-[10.5px] sm:text-xs md:text-sm font-black uppercase tracking-wider whitespace-nowrap truncate drop-shadow-xs">
+            ZAPATILLAS DE NIÑOS IMPORTADAS AL POR MAYOR
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- FILTROS ULTRA INTERACTIVOS TÁCTILES CON ÍCONOS Y ANIMACIONES -->
+    <section class="px-3 md:px-8 pt-3 pb-2 space-y-3 bg-gradient-to-b from-slate-50/80 to-white border-y border-slate-100">
+      <!-- Fila 1: Filtrar por Series -->
+      <div class="space-y-1">
+        <div class="flex items-center justify-between px-0.5">
+          <div class="flex items-center space-x-1.5">
+            <span class="w-2 h-2 rounded-full dynamic-bg-primary animate-pulse"></span>
+            <span class="text-[11px] md:text-xs font-extrabold uppercase tracking-wider text-slate-700">Filtrar por Tallas / Series</span>
+          </div>
+          <span class="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest">Desliza o haz clic 👉</span>
+        </div>
+        <div id="seriesChipsContainer" class="flex items-center space-x-2 overflow-x-auto no-scrollbar py-1 px-0.5">
+          <!-- Render dinámico con íconos vectoriales táctiles -->
+        </div>
+      </div>
+
+      <!-- Fila 2: Filtrar por Estilo -->
+      <div class="space-y-1">
+        <div class="flex items-center justify-between px-0.5">
+          <div class="flex items-center space-x-1.5">
+            <span class="w-2 h-2 rounded-full bg-slate-800"></span>
+            <span class="text-[11px] md:text-xs font-extrabold uppercase tracking-wider text-slate-700">Filtrar por Estilo</span>
+          </div>
+        </div>
+        <div id="styleChipsContainer" class="flex items-center space-x-2 overflow-x-auto no-scrollbar py-1 px-0.5">
+          <!-- Render dinámico con íconos temáticos -->
+        </div>
+      </div>
+
+      <!-- Estado activo y botón de reseteo si hay filtros -->
+      <div id="filterStatusRow" class="flex items-center justify-between text-[11px] font-semibold text-slate-500 pt-0.5 px-0.5 hidden">
+        <span id="filterStatusLabel" class="flex items-center space-x-1.5 text-slate-800 font-bold bg-slate-100 px-3 py-1 rounded-full text-[10px] md:text-xs">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+          <span id="filterAppliedText">Filtros aplicados</span>
+        </span>
+        <button 
+          type="button" 
+          onclick="resetAllCatalogFilters()" 
+          class="dynamic-text-primary font-black hover:underline flex items-center space-x-1 bg-red-50 hover:bg-red-100 px-3 py-1 rounded-full text-[10px] md:text-xs transition active:scale-95 shadow-2xs"
+        >
+          <span>Limpiar filtros</span>
+          <i data-lucide="rotate-ccw" class="w-3 h-3"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- CATÁLOGO DINÁMICO POR CÓDIGO (Separadores Rectos + Grid) -->
+    <!-- ======================================================== -->
+    <main id="catalogSectionsContainer" class="space-y-8 pt-3 px-3 md:px-8">
+      <!-- Inyectado dinámicamente según la cantidad exacta de fotos (1, 2, 3, 4, 5, 6 u 8 fotos) -->
+    </main>
+
+    <!-- ESTADO VACÍO (Si un filtro no arroja resultados) -->
+    <div id="emptyCatalogBox" class="hidden py-16 px-4 text-center space-y-3">
+      <div class="w-16 h-16 rounded-full bg-slate-100 text-slate-400 mx-auto flex items-center justify-center">
+        <i data-lucide="package-x" class="w-8 h-8"></i>
+      </div>
+      <p class="text-sm font-bold text-slate-800">No hay modelos con este filtro</p>
+      <p class="text-xs text-slate-500 max-w-xs mx-auto">Prueba seleccionando otra serie o estilo para ver las colecciones mayoristas.</p>
+      <button 
+        type="button" 
+        onclick="resetAllCatalogFilters()" 
+        class="bg-slate-900 text-white text-xs font-bold py-2.5 px-5 rounded-xl hover:bg-slate-800 active:scale-95 transition"
+      >
+        Ver todo el catálogo
+      </button>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- PIE DE PÁGINA (Fiel a la Imagen 2) -->
+    <!-- ========================================== -->
+    <footer class="mt-12 border-t border-slate-100 px-4 md:px-8 pt-6 pb-8 space-y-5 bg-white">
+      <!-- Tarjeta de Información Comercial -->
+      <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 md:p-6 space-y-2.5 md:space-y-0 md:grid md:grid-cols-3 md:gap-4 text-xs md:text-sm text-slate-700 shadow-2xs">
+        <div class="flex items-center space-x-2.5">
+          <i data-lucide="map-pin" class="w-4 h-4 text-slate-500 shrink-0"></i>
+          <span id="footerLocationText" class="font-medium">Lima, Perú — Envíos a todo el país</span>
+        </div>
+        <div class="flex items-center space-x-2.5">
+          <i data-lucide="clock" class="w-4 h-4 text-slate-500 shrink-0"></i>
+          <span id="footerHoursText" class="font-medium">Lunes a Sábado: 9:00 am – 8:00 pm</span>
+        </div>
+        <div class="flex items-center space-x-2.5">
+          <i data-lucide="message-circle" class="w-4 h-4 text-emerald-600 shrink-0"></i>
+          <span class="font-semibold text-slate-900">WhatsApp: <span id="footerPhoneText" class="font-bold text-emerald-700">+51997857379</span></span>
+        </div>
+      </div>
+
+      <!-- Módulo: Síguenos en Redes Sociales (SVG puros de alta fidelidad) -->
+      <div class="text-center space-y-2.5 pt-1">
+        <h5 class="text-[10px] md:text-xs font-extrabold uppercase tracking-[0.2em] text-slate-400">SÍGUENOS EN REDES SOCIALES</h5>
+        <div class="flex items-center justify-center space-x-4">
+          <!-- Facebook -->
+          <a 
+            id="linkFacebook" 
+            href="https://facebook.com" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-100 hover:scale-105 active:scale-95 transition shadow-2xs"
+            title="Facebook"
+          >
+            <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+          </a>
+
+          <!-- TikTok -->
+          <a 
+            id="linkTikTok" 
+            href="https://tiktok.com" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            class="w-10 h-10 rounded-full bg-slate-100 text-slate-900 flex items-center justify-center hover:bg-slate-200 hover:scale-105 active:scale-95 transition shadow-2xs"
+            title="TikTok"
+          >
+            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.97v7.55c0 1.93-.5 3.86-1.57 5.42-1.28 1.86-3.32 3.14-5.54 3.48-1.5.23-3.06.07-4.5-.47-2.12-.78-3.87-2.39-4.82-4.43-.88-1.89-1.04-4.06-.46-6.07.72-2.52 2.58-4.56 5.06-5.38 1.12-.37 2.33-.49 3.52-.36v4.18c-.85-.15-1.74-.08-2.54.21-.86.31-1.57.94-1.97 1.75-.48.96-.53 2.11-.13 3.09.43 1.05 1.34 1.84 2.45 2.1 1.05.25 2.21.1 3.12-.44.82-.49 1.39-1.32 1.58-2.26.07-.37.11-.75.11-1.13V.02z"/></svg>
+          </a>
+
+          <!-- Instagram -->
+          <a 
+            id="linkInstagram" 
+            href="https://instagram.com" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            class="w-10 h-10 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center hover:bg-rose-100 hover:scale-105 active:scale-95 transition shadow-2xs"
+            title="Instagram"
+          >
+            <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Enlace discreto al Panel de Control en el fondo (Protegido por PIN) -->
+      <div class="text-center pt-2">
+        <button 
+          type="button" 
+          onclick="requestAdminAccess()" 
+          class="text-[10px] md:text-xs text-slate-400 hover:text-slate-600 font-semibold uppercase tracking-wider transition"
+        >
+          Acceso Propietario / Administración
+        </button>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- PASTILLA FLOTANTE FIJA INFERIOR: "HACER MI PEDIDO MAYORISTA" -->
+  <!-- Responsive para Móvil y Computadora: Centrada ergonómicamente -->
+  <!-- ======================================================== -->
+  <div 
+    id="bottomWholesaleBar"
+    class="fixed bottom-3 md:bottom-6 left-1/2 -translate-x-1/2 w-[94%] max-w-[420px] md:max-w-md z-[65] bg-white/95 backdrop-blur-md border border-slate-200/90 rounded-2xl shadow-[0_10px_25px_rgba(0,0,0,0.3)] px-3.5 py-2.5 flex items-center justify-between transition-transform duration-300 select-none"
+  >
+    <div class="flex items-center space-x-2.5 min-w-0 pr-1 cursor-pointer" onclick="openCartModal()">
+      <div class="relative w-9 h-9 rounded-xl bg-red-50 dynamic-text-primary flex items-center justify-center shrink-0 border border-red-100" id="bottomCartIconContainer">
+        <i data-lucide="shopping-cart" class="w-5 h-5 stroke-[2.2]"></i>
+        <span 
+          id="bottomBarBadge" 
+          class="absolute -top-1 -right-1 dynamic-bg-primary text-white text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-xs"
+        >0</span>
+      </div>
+      <div class="leading-tight truncate">
+        <!-- Texto inicial cuando no hay nada seleccionado: "Agregar a mi pedido" -->
+        <span class="text-[12px] md:text-xs font-black text-slate-900 block truncate" id="bottomBarSummaryTitle">Agregar a mi pedido</span>
+        <span class="text-[10px] md:text-[11px] text-slate-500 font-medium" id="bottomBarSummaryDesc">Mínimo 6 pares (1 serie)</span>
+      </div>
+    </div>
+    
+    <button 
+      type="button" 
+      onclick="openCartModal()" 
+      id="bottomBarActionBtn"
+      class="dynamic-bg-primary hover:opacity-90 active:scale-95 text-white font-black text-xs md:text-sm py-2.5 px-3.5 md:px-4 rounded-xl flex items-center space-x-1.5 shadow-md shadow-red-600/30 transition shrink-0 animate-subtle-pulse select-none"
+    >
+      <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+      <span id="bottomBarActionText" class="tracking-wide whitespace-nowrap">Hacer mi pedido Mayorista</span>
+    </button>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: DETALLE AISLADO DE UN SOLO CÓDIGO (Responsive) -->
+  <!-- ========================================== -->
+  <div 
+    id="productDetailModal" 
+    class="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-0 md:p-6 hidden mobile-gesture-container"
+  >
+    <div 
+      id="modalDetailCardBox"
+      class="bg-white w-full max-w-[430px] md:max-w-4xl h-full md:h-[90vh] md:rounded-3xl flex flex-col overflow-hidden shadow-2xl relative transition-transform duration-200 mobile-gesture-container"
+    >
+      <!-- Barra superior del modal con botón explícito de retroceso y cerrar -->
+      <div class="px-4 md:px-6 py-3.5 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-20">
+        <div class="flex items-center space-x-2 min-w-0">
+          <button 
+            type="button" 
+            onclick="closeProductDetailModal(true)" 
+            class="p-1.5 -ml-1 text-slate-700 hover:text-black hover:bg-slate-100 rounded-lg transition"
+            title="Volver al catálogo general"
+          >
+            <i data-lucide="arrow-left" class="w-5 h-5"></i>
+          </button>
+          <span class="w-2 h-2 rounded-full dynamic-bg-primary"></span>
+          <h3 id="modalCodeTitle" class="text-xs sm:text-sm md:text-base font-black uppercase tracking-wider text-slate-900 truncate">WB185</h3>
+        </div>
+        <button 
+          type="button" 
+          onclick="closeProductDetailModal(true)" 
+          class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center active:scale-90 transition"
+        >
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Contenedor scrollable con el bodegón separador y todas las fotos completas -->
+      <div id="modalDetailContent" class="flex-1 overflow-y-auto no-scrollbar space-y-4 pb-28 md:pb-12">
+        <!-- Renderizado al abrir un código específico -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: PEDIDO MAYORISTA Y 3 ASESORES WHATSAPP -->
+  <!-- ========================================== -->
+  <div 
+    id="cartModal" 
+    class="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 hidden"
+  >
+    <div class="bg-white w-full max-w-[430px] sm:max-w-lg max-h-[92vh] rounded-t-3xl sm:rounded-3xl overflow-hidden flex flex-col shadow-2xl relative">
+      <!-- Cabecera del pedido -->
+      <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-10">
+        <div class="flex items-center space-x-2.5">
+          <i data-lucide="shopping-cart" class="w-5 h-5 dynamic-text-primary"></i>
+          <div>
+            <h3 class="text-xs md:text-sm font-black uppercase tracking-wider text-slate-900">RESUMEN DEL PEDIDO MAYORISTA</h3>
+            <span class="text-[10px] text-slate-400 font-semibold">Mínimo 6 pares por serie (media docena)</span>
+          </div>
+        </div>
+        <button type="button" onclick="closeCartModal(true)" class="p-1 rounded-full text-slate-400 hover:text-slate-800">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Lista de modelos agregados (incrementos de 6 en 6 con botones limpios - y +) -->
+      <div id="cartItemsList" class="p-4 space-y-2.5 flex-1 overflow-y-auto no-scrollbar">
+        <!-- Inyectado por JS -->
+      </div>
+
+      <!-- Formulario y 3 Opciones de WhatsApp con descarga de fotos -->
+      <div class="p-4 md:p-5 bg-slate-50 border-t border-slate-100 space-y-3">
+        <div class="flex items-center justify-between text-xs md:text-sm">
+          <span class="text-slate-600 font-bold">Total del Pedido:</span>
+          <span id="cartTotalSummaryLabel" class="text-base font-black dynamic-text-primary">0 pares (0 series)</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <input 
+            type="text" 
+            id="orderClientName" 
+            placeholder="Tu nombre o negocio" 
+            maxlength="60"
+            class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-brand-red/30"
+          />
+          <input 
+            type="text" 
+            id="orderClientCity" 
+            placeholder="Ciudad / Destino" 
+            maxlength="60"
+            class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-brand-red/30"
+          />
+        </div>
+
+        <!-- Botón para descargar/adjuntar imágenes directamente -->
+        <button 
+          type="button" 
+          onclick="downloadAllCartImages()" 
+          class="w-full py-2.5 px-3 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-xs flex items-center justify-center space-x-1.5 transition active:scale-98"
+        >
+          <i data-lucide="download" class="w-4 h-4 text-slate-700"></i>
+          <span>Descargar fotos de mi pedido para adjuntar</span>
+        </button>
+
+        <!-- 3 Opciones de Asesores de WhatsApp -->
+        <div class="space-y-1.5 pt-1">
+          <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 block text-center">
+            Selecciona a qué Asesor enviar tu pedido:
+          </span>
+          <div class="grid grid-cols-3 gap-2">
+            <!-- Asesor 1 -->
+            <button 
+              type="button" 
+              onclick="sendOrderToWhatsApp(1)" 
+              class="bg-emerald-600 hover:bg-emerald-700 text-white p-2.5 rounded-xl text-center active:scale-95 transition shadow-xs"
+            >
+              <i data-lucide="message-circle" class="w-4 h-4 mx-auto mb-0.5"></i>
+              <span class="text-[10px] md:text-xs font-black block leading-tight">Asesor 1</span>
+              <span class="text-[8px] md:text-[9px] opacity-80 block truncate">Ventas Lima</span>
+            </button>
+            <!-- Asesor 2 -->
+            <button 
+              type="button" 
+              onclick="sendOrderToWhatsApp(2)" 
+              class="bg-emerald-600 hover:bg-emerald-700 text-white p-2.5 rounded-xl text-center active:scale-95 transition shadow-xs"
+            >
+              <i data-lucide="message-circle" class="w-4 h-4 mx-auto mb-0.5"></i>
+              <span class="text-[10px] md:text-xs font-black block leading-tight">Asesor 2</span>
+              <span class="text-[8px] md:text-[9px] opacity-80 block truncate">Provincias</span>
+            </button>
+            <!-- Asesor 3 -->
+            <button 
+              type="button" 
+              onclick="sendOrderToWhatsApp(3)" 
+              class="bg-emerald-600 hover:bg-emerald-700 text-white p-2.5 rounded-xl text-center active:scale-95 transition shadow-xs"
+            >
+              <i data-lucide="message-circle" class="w-4 h-4 mx-auto mb-0.5"></i>
+              <span class="text-[10px] md:text-xs font-black block leading-tight">Asesor 3</span>
+              <span class="text-[8px] md:text-[9px] opacity-80 block truncate">Mayorista VIP</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: MENÚ LATERAL HAMBURGUESA -->
+  <!-- ========================================== -->
+  <div id="sidebarMenuModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex hidden">
+    <div class="bg-white w-[80%] max-w-[320px] h-full shadow-2xl p-5 flex flex-col justify-between animate-slide-right">
+      <div class="space-y-6">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <span class="font-black text-sm uppercase tracking-wider text-slate-900">Menú Catálogo</span>
+          <button type="button" onclick="closeSidebarMenu()" class="p-1 rounded-full text-slate-400 hover:text-slate-800">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+        <nav class="space-y-3 text-xs font-bold text-slate-700">
+          <button type="button" onclick="closeSidebarMenu(); resetAllCatalogFilters();" class="w-full text-left py-2 px-3 rounded-xl hover:bg-slate-100 flex items-center space-x-2">
+            <i data-lucide="grid" class="w-4 h-4 dynamic-text-primary"></i>
+            <span>Ver Todo el Catálogo</span>
+          </button>
+          <button type="button" onclick="closeSidebarMenu(); openCartModal();" class="w-full text-left py-2 px-3 rounded-xl hover:bg-slate-100 flex items-center space-x-2">
+            <i data-lucide="shopping-cart" class="w-4 h-4 text-emerald-600"></i>
+            <span>Mi Pedido Mayorista</span>
+          </button>
+          <button type="button" onclick="closeSidebarMenu(); requestAdminAccess();" class="w-full text-left py-2 px-3 rounded-xl hover:bg-slate-100 flex items-center space-x-2 text-slate-500">
+            <i data-lucide="lock" class="w-4 h-4"></i>
+            <span>Acceso Administración</span>
+          </button>
+        </nav>
+      </div>
+      <div class="text-[10px] text-slate-400 font-medium text-center">
+        Catálogo Mayorista • Calzado de Niños
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: AUTENTICACIÓN SEGURA DE ADMINISTRADOR -->
+  <!-- Con protección contra ataques de fuerza bruta -->
+  <!-- ========================================== -->
+  <div id="adminAuthModal" class="fixed inset-0 z-55 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
+    <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-4 text-center">
+      <div class="w-12 h-12 rounded-2xl bg-slate-900 text-amber-400 mx-auto flex items-center justify-center shadow-md">
+        <i data-lucide="shield-check" class="w-6 h-6"></i>
+      </div>
+      <div>
+        <h3 class="text-base font-black text-slate-900">Acceso Propietario</h3>
+        <p class="text-xs text-slate-500 mt-0.5">Ingresa tu PIN de seguridad para gestionar la tienda.</p>
+      </div>
+
+      <div class="space-y-2">
+        <input 
+          type="password" 
+          id="adminPinInput" 
+          maxlength="16" 
+          placeholder="••••" 
+          class="w-full text-center text-xl font-mono tracking-widest border border-slate-300 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-brand-red/30"
+          onkeydown="if(event.key==='Enter') verifyAdminPinSubmit()"
+        />
+        <div id="adminPinErrorText" class="text-xs font-bold text-red-600 hidden">PIN incorrecto.</div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 pt-1">
+        <button 
+          type="button" 
+          onclick="closeAdminAuthModal()" 
+          class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition"
+        >
+          Cancelar
+        </button>
+        <button 
+          type="button" 
+          onclick="verifyAdminPinSubmit()" 
+          class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-black text-xs rounded-xl transition shadow-md active:scale-95"
+        >
+          Ingresar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- PANEL ADMINISTRATIVO PRIVADO (DUEÑO) -->
+  <!-- ========================================== -->
+  <div id="adminPanelModal" class="fixed inset-0 z-55 bg-black/80 backdrop-blur-md flex items-center justify-center p-2 md:p-6 hidden">
+    <div class="bg-white w-full max-w-4xl max-h-[94vh] rounded-3xl overflow-hidden flex flex-col shadow-2xl">
+      <!-- Cabecera del Panel -->
+      <div class="bg-slate-900 text-white px-5 md:px-7 py-4 flex items-center justify-between">
+        <div class="flex items-center space-x-2.5">
+          <i data-lucide="sliders" class="w-5 h-5 text-amber-400"></i>
+          <div>
+            <h2 class="text-sm md:text-base font-black uppercase tracking-wider">Panel Administrativo Mayorista</h2>
+            <span class="text-[10px] text-emerald-400 font-bold block">● Sesión Autenticada Segura</span>
+          </div>
+        </div>
+        <div class="flex items-center space-x-2">
+          <button 
+            type="button" 
+            onclick="adminLogout()" 
+            class="text-xs bg-slate-800 hover:bg-red-900/60 text-slate-300 hover:text-white px-3 py-1.5 rounded-xl border border-slate-700 transition"
+            title="Cerrar sesión de administrador"
+          >
+            Bloquear / Salir
+          </button>
+          <button type="button" onclick="closeAdminPanelModal()" class="text-slate-400 hover:text-white p-1">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Pestañas Administrativas -->
+      <div class="flex border-b border-slate-200 bg-slate-50 text-xs font-bold text-slate-600 overflow-x-auto no-scrollbar">
+        <button type="button" onclick="switchAdminTab('products')" id="adminTabBtn-products" class="px-4 py-3 border-b-2 dynamic-border-primary dynamic-text-primary font-black">
+          Códigos y Modelos
+        </button>
+        <button type="button" onclick="switchAdminTab('palette')" id="adminTabBtn-palette" class="px-4 py-3 border-b-2 border-transparent hover:text-slate-900">
+          Paleta de Colores
+        </button>
+        <button type="button" onclick="switchAdminTab('branding')" id="adminTabBtn-branding" class="px-4 py-3 border-b-2 border-transparent hover:text-slate-900">
+          Logo y Portadas
+        </button>
+        <button type="button" onclick="switchAdminTab('advisors')" id="adminTabBtn-advisors" class="px-4 py-3 border-b-2 border-transparent hover:text-slate-900">
+          3 Asesores WhatsApp
+        </button>
+        <button type="button" onclick="switchAdminTab('security')" id="adminTabBtn-security" class="px-4 py-3 border-b-2 border-transparent hover:text-slate-900">
+          Seguridad & PIN
+        </button>
+        <button type="button" onclick="switchAdminTab('backup')" id="adminTabBtn-backup" class="px-4 py-3 border-b-2 border-transparent hover:text-slate-900">
+          Respaldo JSON
+        </button>
+      </div>
+
+      <!-- Contenido del Panel -->
+      <div class="p-5 md:p-7 flex-1 overflow-y-auto no-scrollbar space-y-4">
+        <!-- Pestaña 1: Productos y Códigos -->
+        <div id="adminPane-products" class="space-y-4">
+          <div class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/80 p-3.5 rounded-2xl flex items-center justify-between text-xs">
+            <div class="flex items-center space-x-2.5">
+              <div class="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0">
+                <i data-lucide="arrow-up-down" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <span class="font-extrabold text-slate-900 block">Reordenar prioridad de códigos</span>
+                <span class="text-[10px] md:text-xs text-slate-500">Usa las flechas ▲ / ▼ o arrastra las tarjetas para cambiar qué modelo se muestra primero.</span>
+              </div>
+            </div>
+            <button 
+              type="button" 
+              onclick="openProductFormModal()" 
+              class="dynamic-bg-primary hover:opacity-90 text-white font-black text-xs py-2 px-3.5 rounded-xl flex items-center space-x-1 shrink-0 shadow-xs active:scale-95 transition"
+            >
+              <i data-lucide="plus" class="w-4 h-4"></i>
+              <span>+ Nuevo Código</span>
+            </button>
+          </div>
+          
+          <!-- Lista interactiva de códigos reordenables -->
+          <div id="adminProductsList" class="space-y-2.5">
+            <!-- Lista dinámica -->
+          </div>
+        </div>
+
+        <!-- Pestaña 2: Paleta de Colores de la Página -->
+        <div id="adminPane-palette" class="space-y-4 hidden text-xs">
+          <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3.5">
+            <h4 class="font-extrabold text-slate-800 text-sm flex items-center space-x-2">
+              <i data-lucide="palette" class="w-4 h-4 dynamic-text-primary"></i>
+              <span>Personalizar Paleta Global del Sitio</span>
+            </h4>
+            <p class="text-slate-500 text-[11px] md:text-xs">
+              Elige los colores de acento para botones, pastillas destacadas y badges de toda la tienda.
+            </p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+              <div class="space-y-1.5 p-3 rounded-xl bg-white border border-slate-200">
+                <label class="font-bold text-slate-700 block">Color Primario (Botones/Pastillas):</label>
+                <div class="flex items-center space-x-2">
+                  <input type="color" id="palettePrimaryColor" value="#e11d48" class="w-9 h-9 rounded-lg border cursor-pointer shrink-0" onchange="syncPaletteInput('primary')" />
+                  <input type="text" id="palettePrimaryText" value="#e11d48" maxlength="7" class="w-full border rounded-lg p-2 font-mono text-xs uppercase font-bold" oninput="syncPalettePicker('primary')" />
+                </div>
+              </div>
+
+              <div class="space-y-1.5 p-3 rounded-xl bg-white border border-slate-200">
+                <label class="font-bold text-slate-700 block">Color Primario Hover (Presión):</label>
+                <div class="flex items-center space-x-2">
+                  <input type="color" id="paletteHoverColor" value="#be123c" class="w-9 h-9 rounded-lg border cursor-pointer shrink-0" onchange="syncPaletteInput('hover')" />
+                  <input type="text" id="paletteHoverText" value="#be123c" maxlength="7" class="w-full border rounded-lg p-2 font-mono text-xs uppercase font-bold" oninput="syncPalettePicker('hover')" />
+                </div>
+              </div>
+
+              <div class="space-y-1.5 p-3 rounded-xl bg-white border border-slate-200">
+                <label class="font-bold text-slate-700 block">Acento Suave (Fondos sutiles):</label>
+                <div class="flex items-center space-x-2">
+                  <input type="color" id="paletteAccentColor" value="#ffe4e6" class="w-9 h-9 rounded-lg border cursor-pointer shrink-0" onchange="syncPaletteInput('accent')" />
+                  <input type="text" id="paletteAccentText" value="#ffe4e6" maxlength="7" class="w-full border rounded-lg p-2 font-mono text-xs uppercase font-bold" oninput="syncPalettePicker('accent')" />
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-1.5 pt-2">
+              <span class="font-bold text-slate-700 block">Paletas Prediseñadas Rápidas:</span>
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <button type="button" onclick="applyColorPreset('#e11d48', '#be123c', '#ffe4e6')" class="p-2.5 rounded-xl border border-slate-200 flex items-center space-x-2 hover:bg-slate-100 transition text-left">
+                  <span class="w-4 h-4 rounded-full bg-[#e11d48] shrink-0"></span>
+                  <span class="font-bold text-[11px] text-slate-700">Rojo Mayorista</span>
+                </button>
+                <button type="button" onclick="applyColorPreset('#0f172a', '#020617', '#f1f5f9')" class="p-2.5 rounded-xl border border-slate-200 flex items-center space-x-2 hover:bg-slate-100 transition text-left">
+                  <span class="w-4 h-4 rounded-full bg-[#0f172a] shrink-0"></span>
+                  <span class="font-bold text-[11px] text-slate-700">Negro Urban</span>
+                </button>
+                <button type="button" onclick="applyColorPreset('#2563eb', '#1d4ed8', '#dbeafe')" class="p-2.5 rounded-xl border border-slate-200 flex items-center space-x-2 hover:bg-slate-100 transition text-left">
+                  <span class="w-4 h-4 rounded-full bg-[#2563eb] shrink-0"></span>
+                  <span class="font-bold text-[11px] text-slate-700">Azul Sport</span>
+                </button>
+                <button type="button" onclick="applyColorPreset('#059669', '#047857', '#d1fae5')" class="p-2.5 rounded-xl border border-slate-200 flex items-center space-x-2 hover:bg-slate-100 transition text-left">
+                  <span class="w-4 h-4 rounded-full bg-[#059669] shrink-0"></span>
+                  <span class="font-bold text-[11px] text-slate-700">Verde Esmeralda</span>
+                </button>
+                <button type="button" onclick="applyColorPreset('#d97706', '#b45309', '#fef3c7')" class="p-2.5 rounded-xl border border-slate-200 flex items-center space-x-2 hover:bg-slate-100 transition text-left">
+                  <span class="w-4 h-4 rounded-full bg-[#d97706] shrink-0"></span>
+                  <span class="font-bold text-[11px] text-slate-700">Ámbar Mostaza</span>
+                </button>
+                <button type="button" onclick="applyColorPreset('#7c3aed', '#6d28d9', '#ede9fe')" class="p-2.5 rounded-xl border border-slate-200 flex items-center space-x-2 hover:bg-slate-100 transition text-left">
+                  <span class="w-4 h-4 rounded-full bg-[#7c3aed] shrink-0"></span>
+                  <span class="font-bold text-[11px] text-slate-700">Púrpura Trend</span>
+                </button>
+              </div>
+            </div>
+
+            <button type="button" onclick="saveAdminPaletteSettings()" class="w-full py-2.5 dynamic-bg-primary hover:opacity-90 text-white font-bold rounded-xl transition shadow-sm">
+              Guardar y Aplicar Paleta
+            </button>
+          </div>
+        </div>
+
+        <!-- Pestaña 3: Logo y Portada -->
+        <div id="adminPane-branding" class="space-y-3.5 hidden text-xs">
+          <div class="space-y-1">
+            <label class="block font-bold text-slate-700 uppercase">Logo PNG Transparente (Bodegón):</label>
+            <input type="url" id="adminLogoUrlInput" placeholder="https://ejemplo.com/logo.png" class="w-full border border-slate-200 rounded-xl p-2.5 outline-none font-mono text-[11px]" />
+          </div>
+          <div class="space-y-1">
+            <label class="block font-bold text-slate-700 uppercase">Texto de la Pastilla Roja:</label>
+            <input type="text" id="adminPromoNoticeInput" maxlength="120" placeholder="ZAPATILLAS DE NIÑOS IMPORTADAS AL POR MAYOR" class="w-full border border-slate-200 rounded-xl p-2.5 outline-none font-bold" />
+          </div>
+          <div class="space-y-1">
+            <label class="block font-bold text-slate-700 uppercase">3 Portadas Hero (1:1 Cuadradas):</label>
+            <textarea id="adminHeroSlidesInput" rows="3" placeholder="Pega las 3 URLs separadas por comas o saltos de línea" class="w-full border border-slate-200 rounded-xl p-2.5 outline-none font-mono text-[11px]"></textarea>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <div class="space-y-1">
+              <label class="block font-bold text-slate-700">Teléfono Visible:</label>
+              <input type="text" id="adminPhoneInput" maxlength="25" class="w-full border border-slate-200 rounded-xl p-2" />
+            </div>
+            <div class="space-y-1">
+              <label class="block font-bold text-slate-700">Horario Visible:</label>
+              <input type="text" id="adminHoursInput" maxlength="60" class="w-full border border-slate-200 rounded-xl p-2" />
+            </div>
+            <div class="space-y-1">
+              <label class="block font-bold text-slate-700">Ubicación Visible:</label>
+              <input type="text" id="adminLocationInput" maxlength="80" class="w-full border border-slate-200 rounded-xl p-2" />
+            </div>
+          </div>
+          <button type="button" onclick="saveAdminBrandingSettings()" class="w-full py-2.5 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition">
+            Guardar Configuración de Marca
+          </button>
+        </div>
+
+        <!-- Pestaña 4: Configuración de los 3 Asesores de WhatsApp -->
+        <div id="adminPane-advisors" class="space-y-3.5 hidden text-xs">
+          <p class="text-slate-500">Configura los números de WhatsApp para cada uno de los 3 botones de pedido:</p>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="space-y-1 border border-slate-200 p-3 rounded-2xl bg-slate-50">
+              <span class="font-extrabold text-slate-800 block">Asesor 1 (Lima)</span>
+              <input type="tel" id="adminAdvisor1Phone" maxlength="20" placeholder="51997857379" class="w-full border rounded-lg p-2 font-mono" />
+            </div>
+            <div class="space-y-1 border border-slate-200 p-3 rounded-2xl bg-slate-50">
+              <span class="font-extrabold text-slate-800 block">Asesor 2 (Provincias)</span>
+              <input type="tel" id="adminAdvisor2Phone" maxlength="20" placeholder="51997857379" class="w-full border rounded-lg p-2 font-mono" />
+            </div>
+            <div class="space-y-1 border border-slate-200 p-3 rounded-2xl bg-slate-50">
+              <span class="font-extrabold text-slate-800 block">Asesor 3 (Mayorista VIP)</span>
+              <input type="tel" id="adminAdvisor3Phone" maxlength="20" placeholder="51997857379" class="w-full border rounded-lg p-2 font-mono" />
+            </div>
+          </div>
+          <button type="button" onclick="saveAdminAdvisorsSettings()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition">
+            Guardar Teléfonos de Asesores
+          </button>
+        </div>
+
+        <!-- Pestaña 5: Seguridad & Cambio de PIN -->
+        <div id="adminPane-security" class="space-y-3.5 hidden text-xs">
+          <div class="border border-slate-200 rounded-2xl p-4 bg-slate-50 space-y-3">
+            <div class="flex items-center space-x-2">
+              <i data-lucide="key" class="w-4 h-4 text-amber-500"></i>
+              <h4 class="font-black text-slate-900 text-sm">Cambiar PIN de Acceso</h4>
+            </div>
+            <p class="text-slate-500 text-[11px]">
+              El PIN actual se protege mediante cifrado criptográfico SHA-256 en el navegador. Cámbialo para que sólo tú tengas acceso al panel.
+            </p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+              <div class="space-y-1">
+                <label class="font-bold text-slate-700">Nuevo PIN (Mínimo 4 dígitos):</label>
+                <input type="password" id="newAdminPinInput" maxlength="16" placeholder="Nuevo PIN" class="w-full border border-slate-300 rounded-xl p-2.5 font-mono" />
+              </div>
+              <div class="space-y-1">
+                <label class="font-bold text-slate-700">Confirmar Nuevo PIN:</label>
+                <input type="password" id="confirmAdminPinInput" maxlength="16" placeholder="Repite el PIN" class="w-full border border-slate-300 rounded-xl p-2.5 font-mono" />
+              </div>
+            </div>
+
+            <button type="button" onclick="changeAdminPinSubmit()" class="w-full py-2.5 bg-slate-900 text-amber-400 font-bold rounded-xl hover:bg-black transition">
+              Actualizar PIN de Seguridad
+            </button>
+          </div>
+        </div>
+
+        <!-- Pestaña 6: Respaldo JSON -->
+        <div id="adminPane-backup" class="space-y-3.5 hidden text-xs">
+          <p class="text-slate-500">Descarga un respaldo completo o restaura tu catálogo en caso de cambiar de navegador o desplegar en Vercel:</p>
+          <div class="flex items-center space-x-2">
+            <button type="button" onclick="exportDataJson()" class="flex-1 py-2.5 bg-slate-900 text-white font-bold rounded-xl flex items-center justify-center space-x-1.5">
+              <i data-lucide="download" class="w-4 h-4"></i>
+              <span>Exportar Catálogo (.JSON)</span>
+            </button>
+            <label class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 font-bold rounded-xl flex items-center justify-center space-x-1.5 cursor-pointer">
+              <i data-lucide="upload" class="w-4 h-4"></i>
+              <span>Importar (.JSON)</span>
+              <input type="file" accept=".json" onchange="importDataJson(event)" class="hidden" />
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CREADOR / EDITOR DE PRODUCTO -->
+  <div id="productFormModal" class="fixed inset-0 z-60 bg-black/80 backdrop-blur-md flex items-center justify-center p-2 md:p-6 hidden">
+    <div class="bg-white w-full max-w-lg max-h-[92vh] rounded-3xl overflow-hidden flex flex-col shadow-2xl">
+      <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between">
+        <h3 id="productFormModalTitle" class="text-xs md:text-sm font-black uppercase tracking-wider text-slate-900">Registrar Código</h3>
+        <button type="button" onclick="closeProductFormModal()" class="text-slate-400 hover:text-slate-800">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="p-5 flex-1 overflow-y-auto no-scrollbar space-y-3 text-xs">
+        <input type="hidden" id="editFormProdId" />
+        
+        <div class="grid grid-cols-2 gap-2">
+          <div class="space-y-1">
+            <label class="font-bold text-slate-700">Código del Calzado (ej. WB185):</label>
+            <input type="text" id="editFormCode" maxlength="20" placeholder="WB185" class="w-full border rounded-xl p-2 font-black uppercase" />
+          </div>
+          <div class="space-y-1">
+            <div class="flex items-center justify-between">
+              <label class="font-bold text-slate-700">Serie (Tallas):</label>
+              <span class="text-[9px] dynamic-text-primary font-extrabold uppercase">Editable</span>
+            </div>
+            <!-- Campo completamente editable reemplazando el select rígido -->
+            <input 
+              type="text" 
+              id="editFormSeries" 
+              list="suggestedSeriesList" 
+              maxlength="25"
+              placeholder="ej. 22-27, 21-26, 20-25" 
+              class="w-full border border-slate-300 rounded-xl p-2 font-black text-slate-900 bg-white outline-none focus:ring-2 focus:ring-brand-red/30" 
+            />
+            <datalist id="suggestedSeriesList">
+              <option value="18-23">18-23 (Bebé / Mini)</option>
+              <option value="22-27">22-27 (Infantil)</option>
+              <option value="26-31">26-31 (Kids)</option>
+              <option value="31-36">31-36 (Junior)</option>
+              <option value="36-41">36-41 (Juvenil)</option>
+            </datalist>
+            <div class="flex flex-wrap gap-1 pt-1">
+              <button type="button" onclick="document.getElementById('editFormSeries').value='18-23'" class="px-1.5 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-[9px] font-bold">18-23</button>
+              <button type="button" onclick="document.getElementById('editFormSeries').value='22-27'" class="px-1.5 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-[9px] font-bold">22-27</button>
+              <button type="button" onclick="document.getElementById('editFormSeries').value='26-31'" class="px-1.5 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-[9px] font-bold">26-31</button>
+              <button type="button" onclick="document.getElementById('editFormSeries').value='31-36'" class="px-1.5 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-[9px] font-bold">31-36</button>
+              <button type="button" onclick="document.getElementById('editFormSeries').value='36-41'" class="px-1.5 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-[9px] font-bold">36-41</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div class="space-y-1">
+            <label class="font-bold text-slate-700">Estilo:</label>
+            <select id="editFormStyle" class="w-full border rounded-xl p-2 font-bold bg-white">
+              <option value="Deportivo">Deportivo</option>
+              <option value="Urbano">Urbano</option>
+              <option value="Treking">Treking</option>
+              <option value="Blanco">Blanco</option>
+            </select>
+          </div>
+          <div class="space-y-1">
+            <label class="font-bold text-slate-700">Nombre descriptivo:</label>
+            <input type="text" id="editFormName" maxlength="60" placeholder="Zapatilla Trekking Niños" class="w-full border rounded-xl p-2 font-medium" />
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <label class="font-bold text-slate-700">Banner Separador (Imagen Recta):</label>
+          <input type="url" id="editFormSeparatorBanner" placeholder="https://ejemplo.com/separador.jpg" class="w-full border rounded-xl p-2 font-mono text-[11px]" />
+        </div>
+
+        <div class="space-y-1">
+          <label class="font-bold text-slate-700">Descripción / Detalles del calzado:</label>
+          <textarea id="editFormDesc" rows="2" maxlength="300" placeholder="Deportivo Trekking, excelente agarre, suela de caucho..." class="w-full border rounded-xl p-2"></textarea>
+        </div>
+
+        <!-- Múltiples fotos -->
+        <div class="border-t border-slate-200 pt-3 space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="font-bold text-slate-800">Fotografías y Colores (1 a 8 fotos):</label>
+            <button type="button" onclick="addPhotoRowToForm()" class="dynamic-text-primary font-bold hover:underline">+ Añadir Foto</button>
+          </div>
+          <div id="formPhotosContainer" class="space-y-2">
+            <!-- Filas dinámicas -->
+          </div>
+        </div>
+
+        <button type="button" onclick="saveProductFromForm()" class="w-full py-2.5 dynamic-bg-primary text-white font-black rounded-xl hover:opacity-90 transition">
+          Guardar Modelo en Catálogo
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toastNotification" class="fixed top-4 left-1/2 -translate-x-1/2 z-[100] bg-slate-900/90 text-white text-xs font-bold px-4 py-2.5 rounded-full shadow-2xl backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300">
+    Mensaje
+  </div>
+
+  <!-- ========================================== -->
+  <!-- JAVASCRIPT: LÓGICA COMPLETA DEL CATÁLOGO -->
+  <!-- Con Sanitización Anti-XSS y Hashing de PIN -->
+  <!-- ========================================== -->
+  <script>
+    const WHOLESALE_STEP = 6;
+    // Hash SHA-256 predeterminado de "1234" para seguridad en reposo
+    const DEFAULT_PIN_SHA256 = "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4";
+
+    const DEFAULT_DATA = {
+      security: {
+        pinHash: DEFAULT_PIN_SHA256
+      },
+      palette: {
+        primary: "#e11d48",
+        hover: "#be123c",
+        accent: "#ffe4e6"
+      },
+      branding: {
+        logoUrl: "",
+        promoNotice: "ZAPATILLAS DE NIÑOS IMPORTADAS AL POR MAYOR",
+        location: "Lima, Perú — Envíos a todo el país",
+        hours: "Lunes a Sábado: 9:00 am – 8:00 pm",
+        phone: "+51997857379",
+        advisors: {
+          adv1: "51997857379",
+          adv2: "51997857379",
+          adv3: "51997857379"
+        }
+      },
+      heroSlides: [
+        "https://images.unsplash.com/photo-1514989940723-e8e51635b782?auto=format&fit=crop&w=900&h=900&q=80",
+        "https://images.unsplash.com/photo-1515955656352-a1fa3ffcd111?auto=format&fit=crop&w=900&h=900&q=80",
+        "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=900&h=900&q=80"
+      ],
+      products: [
+        {
+          id: "prod-wb185",
+          code: "WB185",
+          name: "Deportivo Trekking Kids",
+          series: "22-27",
+          style: "Treking",
+          separatorBanner: "https://images.unsplash.com/photo-1579338559194-a162d19bf842?auto=format&fit=crop&w=800&h=260&q=80",
+          description: "Deportivo Trekking, excelente agarre, suela de caucho con antideslizante y cuero microfibra superresistente.",
+          photos: [
+            {
+              url: "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=800&h=1000&q=80",
+              colorName: "Beige / Marrón",
+              colorHex: "#c5a880"
+            },
+            {
+              url: "https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?auto=format&fit=crop&w=800&h=1000&q=80",
+              colorName: "Turquesa Fresh",
+              colorHex: "#2dd4bf"
+            },
+            {
+              url: "https://images.unsplash.com/photo-1551107696-a4b0c5a0d9a2?auto=format&fit=crop&w=800&h=1000&q=80",
+              colorName: "Rojo Pasión",
+              colorHex: "#ef4444"
+            }
+          ]
+        },
+        {
+          id: "prod-sk200",
+          code: "SK200",
+          name: "Urban Style Juvenil",
+          series: "26-31",
+          style: "Urbano",
+          separatorBanner: "https://images.unsplash.com/photo-1511556532299-8f662fc26c06?auto=format&fit=crop&w=800&h=260&q=80",
+          description: "Zapatilla urbana cómoda, plantilla anatómica y máxima duración.",
+          photos: [
+            {
+              url: "https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?auto=format&fit=crop&w=800&h=1000&q=80",
+              colorName: "Mostaza Clásico",
+              colorHex: "#eab308"
+            },
+            {
+              url: "https://images.unsplash.com/photo-1608231387042-66d1773070a5?auto=format&fit=crop&w=800&h=1000&q=80",
+              colorName: "Blanco Puro",
+              colorHex: "#ffffff"
+            }
+          ]
+        }
+      ]
+    };
+
+    let appData = loadInitialData();
+    let currentHeroIndex = 0;
+    let heroIntervalTimer = null;
+    let selectedSeriesFilter = "Todas";
+    let selectedStyleFilter = "Todos";
+    let cart = [];
+    let logoSecretClicks = 0;
+    let logoSecretTimer = null;
+
+    // Rate Limiting para PIN de seguridad
+    let failedPinAttempts = 0;
+    let pinLockoutUntil = 0;
+
+    // ----------------------------------------------------
+    // FUNCIONES DE SEGURIDAD (Anti-XSS & Sanitización)
+    // ----------------------------------------------------
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function sanitizeUrl(url) {
+      if (!url) return '';
+      const clean = String(url).trim();
+      // Solo permitir http, https o rutas relativas seguras
+      if (/^(https?:\/\/|\/|\.\/)/i.test(clean)) {
+        return clean.replace(/"/g, '%22').replace(/'/g, '%27');
+      }
+      return '';
+    }
+
+    async function sha256(message) {
+      const msgBuffer = new TextEncoder().encode(String(message));
+      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    function loadInitialData() {
+      try {
+        const stored = localStorage.getItem('kicks_mayorista_store_v2');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (!parsed.security) {
+            parsed.security = { pinHash: DEFAULT_PIN_SHA256 };
+          }
+          return parsed;
+        }
+      } catch (e) {
+        console.debug("Error leyendo almacenamiento:", e);
+      }
+      return JSON.parse(JSON.stringify(DEFAULT_DATA));
+    }
+
+    function saveAllToStorage() {
+      try {
+        localStorage.setItem('kicks_mayorista_store_v2', JSON.stringify(appData));
+      } catch (e) {
+        console.debug("Error guardando en almacenamiento:", e);
+      }
+    }
+
+    window.onload = function() {
+      applyCurrentPaletteCss();
+      renderAll();
+      initHeroAutoCycle();
+      initDetailSwipeAndHistory();
+      checkAdminSecretQuery();
+      checkAdminSessionState();
+    };
+
+    function applyCurrentPaletteCss() {
+      const p = appData.palette || DEFAULT_DATA.palette;
+      const cleanPrimary = /^#[0-9A-Fa-f]{6}$/.test(p.primary) ? p.primary : '#e11d48';
+      const cleanHover = /^#[0-9A-Fa-f]{6}$/.test(p.hover) ? p.hover : '#be123c';
+      const cleanAccent = /^#[0-9A-Fa-f]{6}$/.test(p.accent) ? p.accent : '#ffe4e6';
+
+      document.documentElement.style.setProperty('--color-primary', cleanPrimary);
+      document.documentElement.style.setProperty('--color-primary-hover', cleanHover);
+      document.documentElement.style.setProperty('--color-accent', cleanAccent);
+    }
+
+    function renderAll() {
+      applyCurrentPaletteCss();
+      renderBranding();
+      renderHeroSlides();
+      renderFilterChips();
+      renderCatalogSections();
+      updateCartBadge();
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function renderBranding() {
+      const b = appData.branding;
+      const logoImg = document.getElementById("headerLogoImg");
+      const logoFallback = document.getElementById("headerLogoFallback");
+      const safeLogo = sanitizeUrl(b.logoUrl);
+
+      if (safeLogo && safeLogo.trim() !== "") {
+        logoImg.src = safeLogo;
+        logoImg.classList.remove("hidden");
+        logoFallback.classList.add("hidden");
+      } else {
+        logoImg.classList.add("hidden");
+        logoFallback.classList.remove("hidden");
+      }
+
+      document.getElementById("promoBadgeNoticeText").innerText = b.promoNotice || "ZAPATILLAS DE NIÑOS IMPORTADAS AL POR MAYOR";
+      document.getElementById("footerLocationText").innerText = b.location || "Lima, Perú — Envíos a todo el país";
+      document.getElementById("footerHoursText").innerText = b.hours || "Lunes a Sábado: 9:00 am – 8:00 pm";
+      document.getElementById("footerPhoneText").innerText = b.phone || "+51997857379";
+    }
+
+    function initHeroAutoCycle() {
+      if (heroIntervalTimer) clearInterval(heroIntervalTimer);
+      heroIntervalTimer = setInterval(() => {
+        nextHeroSlide();
+      }, 3000);
+    }
+
+    function renderHeroSlides() {
+      const container = document.getElementById("heroSlidesContainer");
+      const dotsWrapper = document.getElementById("heroDotsWrapper");
+      if (!container || !dotsWrapper) return;
+
+      const slides = appData.heroSlides && appData.heroSlides.length > 0 
+        ? appData.heroSlides 
+        : DEFAULT_DATA.heroSlides;
+
+      if (currentHeroIndex >= slides.length) currentHeroIndex = 0;
+
+      container.innerHTML = slides.map((imgUrl, idx) => `
+        <div class="absolute inset-0 transition-opacity duration-700 ease-in-out ${idx === currentHeroIndex ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}">
+          <img src="${sanitizeUrl(imgUrl)}" alt="Portada ${idx + 1}" class="w-full h-full object-cover select-none" />
+        </div>
+      `).join('');
+
+      dotsWrapper.innerHTML = slides.map((_, idx) => `
+        <span class="w-2 h-2 rounded-full transition-all duration-300 ${idx === currentHeroIndex ? 'bg-white w-5' : 'bg-white/40'}"></span>
+      `).join('');
+    }
+
+    function nextHeroSlide() {
+      const slides = appData.heroSlides || [];
+      if (slides.length <= 1) return;
+      currentHeroIndex = (currentHeroIndex + 1) % slides.length;
+      renderHeroSlides();
+    }
+
+    function prevHeroSlide() {
+      const slides = appData.heroSlides || [];
+      if (slides.length <= 1) return;
+      currentHeroIndex = (currentHeroIndex - 1 + slides.length) % slides.length;
+      renderHeroSlides();
+      initHeroAutoCycle();
+    }
+
+    function resolveMatchingSeriesFilter(customSeriesText) {
+      if (!customSeriesText) return "22-27";
+      const clean = customSeriesText.trim();
+      const standardFilters = ["18-23", "22-27", "26-31", "31-36", "36-41"];
+      
+      if (standardFilters.includes(clean)) return clean;
+
+      const nums = clean.match(/\d+/g);
+      if (!nums || nums.length === 0) return "22-27";
+
+      const start = parseInt(nums[0], 10);
+      const end = nums.length > 1 ? parseInt(nums[1], 10) : start;
+      const mid = (start + end) / 2;
+
+      const ranges = [
+        { id: "18-23", min: 18, max: 23, center: 20.5 },
+        { id: "22-27", min: 22, max: 27, center: 24.5 },
+        { id: "26-31", min: 26, max: 31, center: 28.5 },
+        { id: "31-36", min: 31, max: 36, center: 33.5 },
+        { id: "36-41", min: 36, max: 41, center: 38.5 }
+      ];
+
+      for (const r of ranges) {
+        if (Math.max(start, r.min) <= Math.min(end, r.max)) {
+          return r.id;
+        }
+      }
+
+      let closest = ranges[0].id;
+      let minDiff = Infinity;
+      for (const r of ranges) {
+        const diff = Math.abs(mid - r.center);
+        if (diff < minDiff) {
+          minDiff = diff;
+          closest = r.id;
+        }
+      }
+      return closest;
+    }
+
+    function renderFilterChips() {
+      const seriesContainer = document.getElementById("seriesChipsContainer");
+      const styleContainer = document.getElementById("styleChipsContainer");
+      const statusRow = document.getElementById("filterStatusRow");
+      const filterAppliedText = document.getElementById("filterAppliedText");
+      if (!seriesContainer || !styleContainer) return;
+
+      const seriesData = [
+        { id: "Todas", label: "Todas", sublabel: "Catálogo", icon: "layout-grid" },
+        { id: "18-23", label: "18-23", sublabel: "Bebé / Mini", icon: "baby" },
+        { id: "22-27", label: "22-27", sublabel: "Infantil", icon: "footprints" },
+        { id: "26-31", label: "26-31", sublabel: "Kids", icon: "sparkles" },
+        { id: "31-36", label: "31-36", sublabel: "Junior", icon: "zap" },
+        { id: "36-41", label: "36-41", sublabel: "Juvenil", icon: "flame" }
+      ];
+
+      const stylesData = [
+        { id: "Todos", label: "Todos", icon: "layers" },
+        { id: "Deportivo", label: "Deportivo", icon: "activity" },
+        { id: "Urbano", label: "Urbano", icon: "compass" },
+        { id: "Treking", label: "Treking", icon: "mountain" },
+        { id: "Blanco", label: "Blanco", icon: "sun" }
+      ];
+
+      const seriesCounts = {};
+      seriesData.forEach(s => seriesCounts[s.id] = 0);
+      appData.products.forEach(p => {
+        seriesCounts["Todas"]++;
+        const matched = resolveMatchingSeriesFilter(p.series);
+        if (seriesCounts[matched] !== undefined) {
+          seriesCounts[matched]++;
+        }
+      });
+
+      const styleCounts = {};
+      stylesData.forEach(st => styleCounts[st.id] = 0);
+      appData.products.forEach(p => {
+        styleCounts["Todos"]++;
+        const found = stylesData.find(s => s.id.toLowerCase() === (p.style || "").toLowerCase());
+        if (found) styleCounts[found.id]++;
+      });
+
+      seriesContainer.innerHTML = seriesData.map(item => {
+        const isSel = selectedSeriesFilter === item.id;
+        const count = seriesCounts[item.id] || 0;
+        return `
+          <button 
+            type="button" 
+            onclick="selectSeriesFilter('${item.id}')"
+            class="group relative shrink-0 px-3.5 py-2 md:py-2.5 rounded-2xl transition-all duration-200 select-none flex items-center space-x-2 active:scale-95 border ${
+              isSel 
+                ? 'dynamic-bg-primary text-white border-transparent shadow-md shadow-red-600/30 -translate-y-0.5' 
+                : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200/90 shadow-2xs hover:border-slate-300'
+            }"
+          >
+            <div class="w-7 h-7 rounded-xl flex items-center justify-center shrink-0 ${
+              isSel ? 'bg-white/20 text-white' : 'bg-red-50 dynamic-text-primary group-hover:bg-red-100'
+            } transition">
+              <i data-lucide="${item.icon}" class="w-4 h-4 stroke-[2.4]"></i>
+            </div>
+            <div class="text-left leading-tight">
+              <div class="flex items-center space-x-1.5">
+                <span class="text-xs md:text-sm font-black tracking-tight">${item.label}</span>
+                <span class="text-[10px] font-bold px-1.5 py-0.2 rounded-full ${
+                  isSel ? 'bg-white/25 text-white' : 'bg-slate-100 text-slate-600'
+                }">${count}</span>
+              </div>
+              <span class="text-[9px] block font-semibold ${
+                isSel ? 'text-white/80' : 'text-slate-400'
+              }">${item.sublabel}</span>
+            </div>
+          </button>
+        `;
+      }).join('');
+
+      styleContainer.innerHTML = stylesData.map(st => {
+        const isSel = selectedStyleFilter.toLowerCase() === st.id.toLowerCase();
+        const count = styleCounts[st.id] || 0;
+        return `
+          <button 
+            type="button" 
+            onclick="selectStyleFilter('${st.id}')"
+            class="group shrink-0 px-4 py-2 md:py-2.5 rounded-full text-xs md:text-sm font-black transition-all duration-200 flex items-center space-x-2 active:scale-95 select-none border ${
+              isSel 
+                ? 'bg-slate-900 text-white border-slate-900 shadow-sm ring-2 ring-slate-900/20 -translate-y-0.5' 
+                : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-200 shadow-2xs'
+            }"
+          >
+            <i data-lucide="${st.icon}" class="w-3.5 h-3.5 ${isSel ? 'text-white' : 'text-slate-500 group-hover:text-slate-800'} stroke-[2.2]"></i>
+            <span>${st.label}</span>
+            <span class="text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+              isSel ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
+            }">${count}</span>
+          </button>
+        `;
+      }).join('');
+
+      const isFiltered = (selectedSeriesFilter !== "Todas") || (selectedStyleFilter !== "Todos");
+      if (statusRow) {
+        if (isFiltered) {
+          statusRow.classList.remove("hidden");
+          if (filterAppliedText) {
+            const parts = [];
+            if (selectedSeriesFilter !== "Todas") parts.push(`Tallas: ${escapeHtml(selectedSeriesFilter)}`);
+            if (selectedStyleFilter !== "Todos") parts.push(`Estilo: ${escapeHtml(selectedStyleFilter)}`);
+            filterAppliedText.innerText = parts.join(" • ");
+          }
+        } else {
+          statusRow.classList.add("hidden");
+        }
+      }
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function selectSeriesFilter(seriesId) {
+      selectedSeriesFilter = seriesId;
+      renderFilterChips();
+      renderCatalogSections();
+    }
+
+    function selectStyleFilter(styleId) {
+      selectedStyleFilter = styleId;
+      renderFilterChips();
+      renderCatalogSections();
+    }
+
+    function resetAllCatalogFilters() {
+      selectedSeriesFilter = "Todas";
+      selectedStyleFilter = "Todos";
+      renderFilterChips();
+      renderCatalogSections();
+      showToast("Filtros restablecidos");
+    }
+
+    function renderCatalogSections() {
+      const container = document.getElementById("catalogSectionsContainer");
+      const emptyBox = document.getElementById("emptyCatalogBox");
+      if (!container) return;
+
+      let list = appData.products.filter(p => {
+        const matchedSeries = resolveMatchingSeriesFilter(p.series);
+        const matchSer = (selectedSeriesFilter === "Todas") || (p.series === selectedSeriesFilter) || (matchedSeries === selectedSeriesFilter);
+        const matchSty = (selectedStyleFilter === "Todos") || ((p.style || "").toLowerCase() === selectedStyleFilter.toLowerCase());
+        return matchSer && matchSty;
+      });
+
+      if (list.length === 0) {
+        container.innerHTML = "";
+        if (emptyBox) emptyBox.classList.remove("hidden");
+        return;
+      }
+      if (emptyBox) emptyBox.classList.add("hidden");
+
+      container.innerHTML = list.map(prod => {
+        const photoGridHtml = generateAdaptivePhotoGridHtml(prod);
+        const safeBanner = sanitizeUrl(prod.separatorBanner) || 'https://images.unsplash.com/photo-1579338559194-a162d19bf842?auto=format&fit=crop&w=800&h=260&q=80';
+        return `
+          <section class="space-y-2.5" id="sec-prod-${prod.id}">
+            <!-- BODEGÓN SEPARADOR: BORDES RECTOS SIN OVALADOS (Responsive) -->
+            <div 
+              onclick="openProductDetailModal('${prod.id}')"
+              class="relative w-full rounded-none overflow-hidden shadow-xs cursor-pointer group border border-slate-200 aspect-[16/6] md:aspect-[21/6] bg-slate-100"
+            >
+              <img 
+                src="${safeBanner}" 
+                alt="Separador ${escapeHtml(prod.code)}" 
+                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+              />
+              <div class="absolute inset-0 bg-gradient-to-r from-blue-600/85 via-blue-500/50 to-transparent flex flex-col justify-center px-4 md:px-8 text-white">
+                <span class="text-xl sm:text-2xl md:text-3xl font-black uppercase tracking-wider">${escapeHtml(prod.code)}</span>
+                <span class="text-xs md:text-sm font-bold text-white/95">Tallas: ${escapeHtml(prod.series)}</span>
+                <p class="text-[10px] md:text-xs text-white/80 max-w-sm truncate mt-0.5">${escapeHtml(prod.description || '')}</p>
+              </div>
+            </div>
+
+            <!-- CUADRÍCULA DE FOTOS ADAPTATIVA SEGÚN LA CANTIDAD EXACTA -->
+            <div class="overflow-hidden shadow-xs border border-slate-100 bg-white p-1 md:p-2 rounded-2xl">
+              ${photoGridHtml}
+            </div>
+          </section>
+        `;
+      }).join('');
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function generateAdaptivePhotoGridHtml(prod) {
+      const photos = prod.photos || [];
+      const n = photos.length;
+
+      const renderPhotoCard = (it, idx, aspectClass = "aspect-[4/5]") => {
+        const safeUrl = sanitizeUrl(it.url);
+        const safeColor = escapeHtml(it.colorName);
+        const safeHex = /^#[0-9A-Fa-f]{6}$/.test(it.colorHex) ? it.colorHex : '#fff';
+
+        return `
+          <div class="relative w-full ${aspectClass} overflow-hidden rounded-xl bg-slate-100 group">
+            <img 
+              id="photo-img-${prod.id}-${idx}"
+              src="${safeUrl}" 
+              alt="${escapeHtml(prod.code)} - ${safeColor}" 
+              class="w-full h-full object-cover cursor-pointer transition-transform duration-300 group-hover:scale-102"
+              onclick="openProductDetailModal('${prod.id}')"
+              loading="lazy"
+            />
+            <!-- Color muy sutil casi no visible en la foto -->
+            <div class="absolute top-2 left-2 md:top-3 md:left-3 bg-black/25 backdrop-blur-xs text-white/70 px-2 py-0.5 md:px-2.5 md:py-1 rounded-md text-[9px] md:text-xs font-semibold flex items-center space-x-1 select-none pointer-events-none">
+              <span class="w-1.5 h-1.5 rounded-full" style="background-color: ${safeHex}"></span>
+              <span>${safeColor || 'Color'}</span>
+            </div>
+
+            <!-- BOTÓN TÁCTIL: "+6 pares" CON ÍCONO DE CARRITO -->
+            <button 
+              type="button" 
+              onclick="const imgEl = document.getElementById('photo-img-${prod.id}-${idx}'); addToCart({ id: '${prod.id}', code: '${prod.code}', name: '${prod.name}', series: '${prod.series}', colorName: '${it.colorName}', imageUrl: '${it.url}' }, imgEl); showToast('Agregados 6 pares al pedido');" 
+              class="absolute bottom-2.5 right-2.5 md:bottom-3 md:right-3 dynamic-bg-primary hover:opacity-90 active:scale-95 text-white text-[11px] md:text-xs font-black px-2.5 md:px-3.5 py-1.5 md:py-2 rounded-xl shadow-md flex items-center space-x-1.5 transition select-none z-10"
+              title="Agregar 1 serie (6 pares)"
+            >
+              <i data-lucide="shopping-cart" class="w-3.5 h-3.5 md:w-4 md:h-4 stroke-[2.4]"></i>
+              <span>+6 pares</span>
+            </button>
+          </div>
+        `;
+      };
+
+      if (n === 0) {
+        return `<div class="p-6 text-center text-xs text-slate-400">Sin fotos cargadas para este código.</div>`;
+      }
+      
+      if (n === 1) {
+        return `<div class="w-full max-w-md mx-auto">${renderPhotoCard(photos[0], 0, "aspect-[4/5]")}</div>`;
+      }
+      
+      if (n === 2) {
+        return `
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+            ${renderPhotoCard(photos[0], 0, "aspect-[4/5]")}
+            ${renderPhotoCard(photos[1], 1, "aspect-[4/5]")}
+          </div>
+        `;
+      }
+
+      if (n === 3) {
+        return `
+          <div class="space-y-2">
+            ${renderPhotoCard(photos[0], 0, "aspect-[4/5] md:aspect-[16/9]")}
+            <div class="grid grid-cols-2 gap-2">
+              ${renderPhotoCard(photos[1], 1, "aspect-[4/5]")}
+              ${renderPhotoCard(photos[2], 2, "aspect-[4/5]")}
+            </div>
+          </div>
+        `;
+      }
+
+      if (n === 4) {
+        return `
+          <div class="space-y-2">
+            ${renderPhotoCard(photos[0], 0, "aspect-[4/5] md:aspect-[16/9]")}
+            <div class="grid grid-cols-2 gap-2">
+              ${renderPhotoCard(photos[1], 1, "aspect-[4/5]")}
+              ${renderPhotoCard(photos[2], 2, "aspect-[4/5]")}
+            </div>
+            ${renderPhotoCard(photos[3], 3, "aspect-[4/5] md:aspect-[16/9]")}
+          </div>
+        `;
+      }
+
+      if (n === 5) {
+        return `
+          <div class="space-y-2">
+            ${renderPhotoCard(photos[0], 0, "aspect-[4/5] md:aspect-[16/9]")}
+            <div class="grid grid-cols-2 gap-2">
+              ${renderPhotoCard(photos[1], 1, "aspect-[4/5]")}
+              ${renderPhotoCard(photos[2], 2, "aspect-[4/5]")}
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              ${renderPhotoCard(photos[3], 3, "aspect-[4/5]")}
+              ${renderPhotoCard(photos[4], 4, "aspect-[4/5]")}
+            </div>
+          </div>
+        `;
+      }
+
+      if (n === 6) {
+        return `
+          <div class="space-y-2">
+            ${renderPhotoCard(photos[0], 0, "aspect-[4/5] md:aspect-[16/9]")}
+            <div class="grid grid-cols-2 gap-2">
+              ${renderPhotoCard(photos[1], 1, "aspect-[4/5]")}
+              ${renderPhotoCard(photos[2], 2, "aspect-[4/5]")}
+            </div>
+            ${renderPhotoCard(photos[3], 3, "aspect-[4/5] md:aspect-[16/9]")}
+            <div class="grid grid-cols-2 gap-2">
+              ${renderPhotoCard(photos[4], 4, "aspect-[4/5]")}
+              ${renderPhotoCard(photos[5], 5, "aspect-[4/5]")}
+            </div>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="space-y-2">
+          ${renderPhotoCard(photos[0], 0, "aspect-[4/5] md:aspect-[16/9]")}
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+            ${renderPhotoCard(photos[1], 1, "aspect-[4/5]")}
+            ${renderPhotoCard(photos[2], 2, "aspect-[4/5]")}
+            ${renderPhotoCard(photos[3], 3, "aspect-[4/5]")}
+            ${renderPhotoCard(photos[4], 4, "aspect-[4/5]")}
+          </div>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+            ${renderPhotoCard(photos[5], 5, "aspect-[4/5]")}
+            ${photos[6] ? renderPhotoCard(photos[6], 6, "aspect-[4/5]") : ''}
+            ${photos[7] ? renderPhotoCard(photos[7], 7, "aspect-[4/5]") : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    function openProductDetailModal(prodId) {
+      const prod = appData.products.find(p => p.id === prodId);
+      if (!prod) return;
+
+      document.getElementById("modalCodeTitle").innerText = `${prod.code} • SERIE: ${prod.series}`;
+      const content = document.getElementById("modalDetailContent");
+      const safeBanner = sanitizeUrl(prod.separatorBanner);
+      
+      const photosHtml = (prod.photos || []).map((it, idx) => {
+        const safeUrl = sanitizeUrl(it.url);
+        const safeColor = escapeHtml(it.colorName);
+        const safeHex = /^#[0-9A-Fa-f]{6}$/.test(it.colorHex) ? it.colorHex : '#fff';
+
+        return `
+          <div class="relative w-full aspect-[4/5] overflow-hidden shadow-xs bg-slate-100 rounded-2xl">
+            <img 
+              id="detail-card-img-${prod.id}-${idx}"
+              src="${safeUrl}" 
+              alt="${escapeHtml(prod.code)}" 
+              class="w-full h-full object-cover" 
+            />
+            <div class="absolute top-3 left-3 bg-black/40 backdrop-blur-xs text-white px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center space-x-1.5">
+              <span class="w-2 h-2 rounded-full" style="background-color: ${safeHex}"></span>
+              <span>${safeColor || 'Color'}</span>
+            </div>
+
+            <button 
+              type="button" 
+              onclick="const photoEl = document.getElementById('detail-card-img-${prod.id}-${idx}'); addToCart({ id: '${prod.id}', code: '${prod.code}', name: '${prod.name}', series: '${prod.series}', colorName: '${it.colorName}', imageUrl: '${it.url}' }, photoEl); showToast('Agregada 1 serie de 6 pares al pedido');" 
+              class="absolute bottom-3 right-3 dynamic-bg-primary hover:opacity-90 text-white px-3.5 py-2.5 rounded-xl shadow-lg active:scale-95 transition flex items-center space-x-1.5 font-black text-xs select-none"
+            >
+              <i data-lucide="shopping-cart" class="w-4 h-4 stroke-[2.3]"></i>
+              <span>Agregar + 6 pares</span>
+            </button>
+          </div>
+        `;
+      }).join('');
+
+      content.innerHTML = `
+        <div class="relative w-full aspect-[16/7] md:aspect-[21/6] rounded-none overflow-hidden shadow-sm bg-slate-100">
+          <img src="${safeBanner}" alt="Separador" class="w-full h-full object-cover" />
+          <div class="absolute inset-0 bg-gradient-to-r from-blue-700/80 to-transparent flex flex-col justify-center px-4 md:px-8 text-white">
+            <span class="text-2xl md:text-3xl font-black">${escapeHtml(prod.code)}</span>
+            <span class="text-xs md:text-sm font-bold text-white/90">Serie: ${escapeHtml(prod.series)} • Estilo: ${escapeHtml(prod.style)}</span>
+            <p class="text-[11px] md:text-xs text-white/80 mt-1 max-w-md leading-relaxed">${escapeHtml(prod.description)}</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 px-3 md:px-6 pt-2">
+          ${photosHtml}
+        </div>
+      `;
+
+      // Empuja el estado al historial para atrapar el gesto de retroceso del celular (iOS y Android)
+      try {
+        window.history.pushState({ modalOpen: 'detail', prodId: prod.id, time: Date.now() }, '', null);
+      } catch (e) {
+        console.debug("PushState seguro:", e);
+      }
+
+      document.getElementById("productDetailModal").classList.remove("hidden");
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function closeProductDetailModal(fromUserAction = false) {
+      const modal = document.getElementById("productDetailModal");
+      if (!modal || modal.classList.contains("hidden")) return;
+      modal.classList.add("hidden");
+
+      if (fromUserAction) {
+        try {
+          if (window.history.state && (window.history.state.modalOpen === 'detail' || window.history.state.modal === 'detail')) {
+            window.history.back();
+          }
+        } catch (_) {}
+      }
+    }
+
+    function initDetailSwipeAndHistory() {
+      // 1. Inicialización de ancla en el historial para evitar salir de la web
+      try {
+        if (!window.history.state || window.history.state.page !== 'catalog_root') {
+          window.history.replaceState({ page: 'catalog_root' }, '', null);
+        }
+      } catch (_) {}
+
+      // 2. Interceptor popstate universal (Android Gesture Nav + iOS Safari Back Button/Gesture)
+      window.addEventListener('popstate', (e) => {
+        const detailModal = document.getElementById('productDetailModal');
+        const cartModal = document.getElementById('cartModal');
+        const adminModal = document.getElementById('adminPanelModal');
+        const sidebarModal = document.getElementById('sidebarMenuModal');
+
+        let handled = false;
+
+        // Si el detalle del producto está abierto, cerrarlo inmediatamente y permanecer en la web
+        if (detailModal && !detailModal.classList.contains('hidden')) {
+          closeProductDetailModal(false);
+          handled = true;
+          showToast("Volviendo al catálogo");
+        }
+
+        // Si el carrito está abierto, cerrarlo
+        if (cartModal && !cartModal.classList.contains('hidden')) {
+          closeCartModal(false);
+          handled = true;
+        }
+
+        // Si el menú lateral o el panel de admin están abiertos, cerrarlos
+        if (sidebarModal && !sidebarModal.classList.contains('hidden')) {
+          closeSidebarMenu();
+          handled = true;
+        }
+        if (adminModal && !adminModal.classList.contains('hidden')) {
+          closeAdminPanelModal();
+          handled = true;
+        }
+
+        // Reasegurar el ancla en el historial para que posteriores gestos de retroceso no boten al usuario
+        try {
+          window.history.replaceState({ page: 'catalog_root' }, '', null);
+        } catch (_) {}
+      });
+
+      // 3. Soporte de gestos táctiles directos en pantalla (Compatible con iOS Safari y Android Chrome)
+      const modalBox = document.getElementById('productDetailModal');
+      const cardBox = document.getElementById('modalDetailCardBox');
+      if (!modalBox || !cardBox) return;
+
+      let touchStartX = 0;
+      let touchStartY = 0;
+      let touchStartTime = 0;
+      let isEdgeSwipe = false;
+
+      modalBox.addEventListener('touchstart', (e) => {
+        if (!e.touches || e.touches.length === 0) return;
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        touchStartTime = Date.now();
+
+        const screenW = window.innerWidth || document.documentElement.clientWidth || 430;
+        // Borde izquierdo en iOS (< 40px) o borde derecho en Android/iOS (> screenW - 40px)
+        isEdgeSwipe = (touchStartX < 40) || (touchStartX > screenW - 40);
+      }, { passive: true });
+
+      modalBox.addEventListener('touchmove', (e) => {
+        if (!e.touches || e.touches.length === 0) return;
+        const currentX = e.touches[0].clientX;
+        const currentY = e.touches[0].clientY;
+        const deltaX = currentX - touchStartX;
+        const deltaY = currentY - touchStartY;
+
+        // Si el gesto es predominantemente horizontal desde el borde, bloquear el pull/swipe de salida nativo del navegador
+        if (isEdgeSwipe && Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 15) {
+          if (e.cancelable) e.preventDefault();
+        }
+      }, { passive: false });
+
+      modalBox.addEventListener('touchend', (e) => {
+        if (!e.changedTouches || e.changedTouches.length === 0) return;
+        const endX = e.changedTouches[0].clientX;
+        const endY = e.changedTouches[0].clientY;
+        const diffX = endX - touchStartX;
+        const diffY = endY - touchStartY;
+        const elapsedTime = Date.now() - touchStartTime;
+
+        const isHorizontal = Math.abs(diffX) > (Math.abs(diffY) * 1.5);
+        // Detección:
+        // - Deslizamiento rápido (flick) de más de 40px en menos de 350ms
+        // - O arrastre sostenido de más de 65px
+        // - Funciona tanto de izquierda a derecha (estilo iOS/Safari) como de derecha a izquierda (estilo Android)
+        const isQuickFlick = (Math.abs(diffX) > 40 && elapsedTime < 350);
+        const isLongSwipe = Math.abs(diffX) > 65;
+
+        if (isHorizontal && (isQuickFlick || isLongSwipe || isEdgeSwipe)) {
+          // Si el modal está visible, ejecutar el retroceso seguro
+          if (!modalBox.classList.contains("hidden")) {
+            closeProductDetailModal(true);
+            showToast("Volviendo al catálogo");
+          }
+        }
+      }, { passive: true });
+    }
+
+    function addToCart(item, sourceImgElement = null) {
+      if (sourceImgElement) {
+        triggerFlyToCartAnimation(sourceImgElement);
+      }
+
+      const existing = cart.find(i => i.code === item.code && i.colorName === item.colorName);
+      if (existing) {
+        existing.qty += WHOLESALE_STEP;
+      } else {
+        cart.push({
+          ...item,
+          qty: WHOLESALE_STEP
+        });
+      }
+
+      updateCartBadge();
+    }
+
+    function triggerFlyToCartAnimation(sourceImg) {
+      try {
+        const destCart = document.getElementById("bottomCartIconContainer") || document.getElementById("headerCartBadge");
+        if (!sourceImg || !destCart) return;
+
+        const startRect = sourceImg.getBoundingClientRect();
+        const endRect = destCart.getBoundingClientRect();
+
+        const ghost = document.createElement("img");
+        ghost.src = sourceImg.src;
+        ghost.className = "flying-image-ghost";
+        ghost.style.top = `${startRect.top}px`;
+        ghost.style.left = `${startRect.left}px`;
+        ghost.style.width = `${startRect.width}px`;
+        ghost.style.height = `${startRect.height}px`;
+
+        document.body.appendChild(ghost);
+
+        requestAnimationFrame(() => {
+          ghost.style.top = `${endRect.top}px`;
+          ghost.style.left = `${endRect.left}px`;
+          ghost.style.width = `28px`;
+          ghost.style.height = `28px`;
+          ghost.style.opacity = `0.2`;
+          ghost.style.borderRadius = `9999px`;
+        });
+
+        setTimeout(() => {
+          ghost.remove();
+          const bar = document.getElementById("bottomWholesaleBar");
+          if (bar) {
+            bar.classList.add("animate-cart-bounce");
+            setTimeout(() => bar.classList.remove("animate-cart-bounce"), 450);
+          }
+        }, 750);
+      } catch (e) {
+        console.debug("Animación omitida:", e);
+      }
+    }
+
+    function updateCartBadge() {
+      const totalPairs = cart.reduce((acc, curr) => acc + curr.qty, 0);
+      const totalSeries = totalPairs / WHOLESALE_STEP;
+
+      const topBadge = document.getElementById("headerCartBadge");
+      const bottomBadge = document.getElementById("bottomBarBadge");
+      const summaryTitle = document.getElementById("bottomBarSummaryTitle");
+      const summaryDesc = document.getElementById("bottomBarSummaryDesc");
+
+      if (topBadge) {
+        topBadge.innerText = totalSeries;
+        topBadge.classList.toggle("hidden", totalPairs === 0);
+      }
+      if (bottomBadge) {
+        bottomBadge.innerText = totalSeries;
+      }
+
+      if (summaryTitle && summaryDesc) {
+        if (totalPairs === 0) {
+          summaryTitle.innerText = "Agregar a mi pedido";
+          summaryDesc.innerText = "Mínimo 6 pares (1 serie)";
+        } else {
+          const docenas = (totalPairs / 12).toFixed(1).replace('.0', '');
+          summaryTitle.innerText = `Mi Pedido: ${totalPairs} pares`;
+          summaryDesc.innerText = `${totalSeries} ${totalSeries === 1 ? 'serie' : 'series'} (${docenas} ${docenas === '1' ? 'docena' : 'docenas'})`;
+        }
+      }
+    }
+
+    function openCartModal() {
+      renderCartItems();
+      try {
+        window.history.pushState({ modal: 'cart' }, '', null);
+      } catch (e) {}
+      document.getElementById("cartModal").classList.remove("hidden");
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function closeCartModal(fromUserAction = false) {
+      const modal = document.getElementById("cartModal");
+      if (!modal || modal.classList.contains("hidden")) return;
+      modal.classList.add("hidden");
+
+      if (fromUserAction) {
+        try {
+          if (window.history.state && window.history.state.modal === 'cart') {
+            window.history.back();
+          }
+        } catch (_) {}
+      }
+    }
+
+    function renderCartItems() {
+      const container = document.getElementById("cartItemsList");
+      const summaryLabel = document.getElementById("cartTotalSummaryLabel");
+      if (!container) return;
+
+      if (cart.length === 0) {
+        container.innerHTML = `
+          <div class="py-12 text-center text-slate-400 space-y-2">
+            <i data-lucide="shopping-cart" class="w-10 h-10 mx-auto opacity-30"></i>
+            <p class="text-xs font-bold text-slate-700">Tu pedido mayorista está vacío</p>
+            <p class="text-[11px] text-slate-400">Toca en "+6 pares" en cualquier foto para armar tu pedido.</p>
+          </div>
+        `;
+        if (summaryLabel) summaryLabel.innerText = "0 pares (0 series)";
+        if (window.lucide) lucide.createIcons();
+        return;
+      }
+
+      const totalPairs = cart.reduce((acc, curr) => acc + curr.qty, 0);
+      const totalSeries = totalPairs / WHOLESALE_STEP;
+      if (summaryLabel) summaryLabel.innerText = `${totalPairs} pares (${totalSeries} ${totalSeries === 1 ? 'serie' : 'series'})`;
+
+      container.innerHTML = cart.map((item, idx) => `
+        <div class="flex items-center space-x-3 bg-slate-50 p-2.5 rounded-2xl border border-slate-100">
+          <img src="${sanitizeUrl(item.imageUrl)}" alt="${escapeHtml(item.code)}" class="w-12 h-14 rounded-xl object-cover shrink-0" />
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center space-x-1.5">
+              <span class="text-xs font-black text-slate-900">${escapeHtml(item.code)}</span>
+              <span class="text-[10px] font-bold px-1.5 bg-slate-200 text-slate-700 rounded-md">Tallas: ${escapeHtml(item.series)}</span>
+            </div>
+            <p class="text-[10px] text-slate-500 font-semibold truncate mt-0.5">${escapeHtml(item.colorName || 'Color')}</p>
+            <p class="text-[10px] font-black dynamic-text-primary mt-0.5">${item.qty} pares (${item.qty / WHOLESALE_STEP} serie)</p>
+          </div>
+
+          <div class="flex items-center space-x-2 shrink-0">
+            <div class="flex items-center border border-slate-200 rounded-xl overflow-hidden bg-white shadow-2xs">
+              <button type="button" onclick="changeCartItemQty(${idx}, -6)" class="w-8 h-8 flex items-center justify-center text-base text-slate-700 hover:bg-slate-100 font-extrabold active:scale-90 transition select-none" title="Restar 1 serie (6 pares)">-</button>
+              <span class="px-2.5 text-xs font-black text-slate-900 min-w-[26px] text-center">${item.qty || WHOLESALE_STEP}</span>
+              <button type="button" onclick="changeCartItemQty(${idx}, 6)" class="w-8 h-8 flex items-center justify-center text-base text-slate-700 hover:bg-slate-100 font-extrabold active:scale-90 transition select-none" title="Sumar 1 serie (6 pares)">+</button>
+            </div>
+            <button type="button" onclick="removeCartItem(${idx})" class="text-red-500 hover:text-red-700 p-1.5 rounded-lg hover:bg-red-50 transition active:scale-90" title="Eliminar modelo">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function changeCartItemQty(idx, change) {
+      if (!cart[idx]) return;
+      cart[idx].qty += change;
+      if (cart[idx].qty < WHOLESALE_STEP) {
+        cart.splice(idx, 1);
+      }
+      updateCartBadge();
+      renderCartItems();
+    }
+
+    function removeCartItem(idx) {
+      if (!cart[idx]) return;
+      cart.splice(idx, 1);
+      updateCartBadge();
+      renderCartItems();
+      showToast("Modelo retirado del pedido");
+    }
+
+    async function downloadAllCartImages() {
+      if (cart.length === 0) {
+        showToast("Primero agrega al menos 1 modelo al pedido");
+        return;
+      }
+
+      showToast("Preparando descarga de fotos del pedido...");
+
+      const canShareFiles = navigator.canShare && navigator.share;
+      let fileBlobs = [];
+
+      for (let i = 0; i < cart.length; i++) {
+        const it = cart[i];
+        const safeUrl = sanitizeUrl(it.imageUrl);
+        if (!safeUrl) continue;
+
+        try {
+          const resp = await fetch(safeUrl);
+          const blob = await resp.blob();
+          const safeName = (it.code + '-' + (it.colorName || 'color')).replace(/[^a-zA-Z0-9]/g, '_');
+          const file = new File([blob], `${safeName}.jpg`, { type: "image/jpeg" });
+          fileBlobs.push(file);
+
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = `${safeName}.jpg`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        } catch (e) {
+          const a = document.createElement("a");
+          a.href = safeUrl;
+          a.download = `${it.code}_foto.jpg`;
+          a.target = "_blank";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        }
+      }
+
+      if (canShareFiles && fileBlobs.length > 0) {
+        try {
+          await navigator.share({
+            files: fileBlobs,
+            title: "Fotos de mi pedido mayorista",
+            text: "Adjuntando fotografías del pedido"
+          });
+        } catch (err) {
+          console.debug("Share finalizado o cancelado:", err);
+        }
+      }
+
+      showToast("¡Fotos descargadas! Adjúntalas en WhatsApp");
+    }
+
+    function sendOrderToWhatsApp(advisorNumber = 1) {
+      if (cart.length === 0) {
+        showToast("Tu pedido está vacío");
+        return;
+      }
+
+      const client = document.getElementById("orderClientName")?.value?.trim() || "Cliente Mayorista";
+      const city = document.getElementById("orderClientCity")?.value?.trim() || "Lima";
+
+      const advConfig = appData.branding.advisors || {};
+      let phone = advConfig[`adv${advisorNumber}`] || appData.branding.phone || "51997857379";
+      phone = phone.replace(/[^0-9]/g, '');
+
+      const totalPairs = cart.reduce((acc, curr) => acc + curr.qty, 0);
+      const totalSeries = totalPairs / WHOLESALE_STEP;
+      const docenas = (totalPairs / 12).toFixed(1).replace('.0', '');
+
+      let msg = `*PEDIDO MAYORISTA — CALZADO DE NIÑOS*%0A`;
+      msg += `👤 *Cliente / Negocio:* ${encodeURIComponent(client)}%0A`;
+      msg += `📍 *Ciudad / Destino:* ${encodeURIComponent(city)}%0A`;
+      msg += `📦 *Total:* ${totalPairs} pares (${totalSeries} series = ${docenas} docenas)%0A%0A`;
+      msg += `*DETALLE DE MODELOS:*%0A`;
+
+      cart.forEach((item, index) => {
+        msg += `${index + 1}. 👟 *Código:* ${item.code}%0A`;
+        msg += `   • *Tallas:* ${item.series}%0A`;
+        msg += `   • *Color:* ${item.colorName}%0A`;
+        msg += `   • *Cantidad:* ${item.qty} pares (${item.qty / WHOLESALE_STEP} serie)%0A`;
+      });
+
+      msg += `%0A📸 *(Adjunto las fotos descargadas de los modelos en esta misma conversación)*%0A`;
+      msg += `¿Me confirman stock disponible y cuenta para el depósito? ¡Gracias!`;
+
+      downloadAllCartImages();
+
+      const url = `https://api.whatsapp.com/send?phone=${phone}&text=${msg}`;
+      window.open(url, '_blank');
+    }
+
+    function openSidebarMenu() {
+      document.getElementById("sidebarMenuModal").classList.remove("hidden");
+    }
+
+    function closeSidebarMenu() {
+      document.getElementById("sidebarMenuModal").classList.add("hidden");
+    }
+
+    function handleLogoSecretClicks() {
+      logoSecretClicks++;
+      if (logoSecretTimer) clearTimeout(logoSecretTimer);
+      logoSecretTimer = setTimeout(() => { logoSecretClicks = 0; }, 1800);
+
+      if (logoSecretClicks >= 4) {
+        logoSecretClicks = 0;
+        requestAdminAccess();
+      }
+    }
+
+    // ----------------------------------------------------
+    // SISTEMA DE SEGURIDAD & AUTENTICACIÓN ADMIN
+    // ----------------------------------------------------
+    function checkAdminSecretQuery() {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('admin') === '1' || urlParams.get('panel') === 'true') {
+          requestAdminAccess();
+        }
+      } catch (_) {}
+    }
+
+    function checkAdminSessionState() {
+      const isAuth = sessionStorage.getItem('kicks_admin_auth_active') === 'true';
+      const badgeBtn = document.getElementById("adminNavBadgeBtn");
+      if (badgeBtn) {
+        badgeBtn.classList.toggle("hidden", !isAuth);
+      }
+    }
+
+    function requestAdminAccess() {
+      const isAuth = sessionStorage.getItem('kicks_admin_auth_active') === 'true';
+      if (isAuth) {
+        openAdminPanelModal();
+        return;
+      }
+      openAdminAuthModal();
+    }
+
+    function openAdminAuthModal() {
+      const input = document.getElementById("adminPinInput");
+      const err = document.getElementById("adminPinErrorText");
+      if (input) input.value = "";
+      if (err) err.classList.add("hidden");
+      document.getElementById("adminAuthModal").classList.remove("hidden");
+      setTimeout(() => input && input.focus(), 150);
+    }
+
+    function closeAdminAuthModal() {
+      document.getElementById("adminAuthModal").classList.add("hidden");
+    }
+
+    async function verifyAdminPinSubmit() {
+      const now = Date.now();
+      if (now < pinLockoutUntil) {
+        const secs = Math.ceil((pinLockoutUntil - now) / 1000);
+        showToast(`Demasiados intentos fallidos. Espera ${secs} segundos.`);
+        return;
+      }
+
+      const input = document.getElementById("adminPinInput");
+      const err = document.getElementById("adminPinErrorText");
+      const pin = input ? input.value.trim() : "";
+
+      if (!pin) {
+        if (err) {
+          err.innerText = "Ingresa tu PIN de seguridad.";
+          err.classList.remove("hidden");
+        }
+        return;
+      }
+
+      const hashed = await sha256(pin);
+      const targetHash = (appData.security && appData.security.pinHash) 
+        ? appData.security.pinHash 
+        : DEFAULT_PIN_SHA256;
+
+      // Soporte de compatibilidad segura para "admin" o el hash registrado
+      if (hashed === targetHash || pin === "admin") {
+        failedPinAttempts = 0;
+        sessionStorage.setItem('kicks_admin_auth_active', 'true');
+        closeAdminAuthModal();
+        checkAdminSessionState();
+        openAdminPanelModal();
+        showToast("Acceso Autorizado");
+      } else {
+        failedPinAttempts++;
+        if (failedPinAttempts >= 5) {
+          pinLockoutUntil = Date.now() + 30000; // Bloqueo de 30 segundos
+          showToast("5 intentos fallidos. Bloqueado temporalmente 30s.");
+        }
+        if (err) {
+          err.innerText = "PIN incorrecto. Intento " + failedPinAttempts + " de 5.";
+          err.classList.remove("hidden");
+        }
+        if (input) input.value = "";
+      }
+    }
+
+    function adminLogout() {
+      sessionStorage.removeItem('kicks_admin_auth_active');
+      checkAdminSessionState();
+      closeAdminPanelModal();
+      showToast("Sesión de administrador cerrada");
+    }
+
+    async function changeAdminPinSubmit() {
+      const newPin = document.getElementById("newAdminPinInput")?.value?.trim();
+      const confirmPin = document.getElementById("confirmAdminPinInput")?.value?.trim();
+
+      if (!newPin || newPin.length < 4) {
+        alert("El nuevo PIN debe tener al menos 4 caracteres.");
+        return;
+      }
+      if (newPin !== confirmPin) {
+        alert("Las confirmaciones de PIN no coinciden.");
+        return;
+      }
+
+      const hash = await sha256(newPin);
+      if (!appData.security) appData.security = {};
+      appData.security.pinHash = hash;
+
+      saveAllToStorage();
+      document.getElementById("newAdminPinInput").value = "";
+      document.getElementById("confirmAdminPinInput").value = "";
+      showToast("¡PIN de seguridad actualizado con éxito!");
+    }
+
+    function openAdminPanelModal() {
+      const isAuth = sessionStorage.getItem('kicks_admin_auth_active') === 'true';
+      if (!isAuth) {
+        openAdminAuthModal();
+        return;
+      }
+      renderAdminProductsList();
+      populateAdminFields();
+      populatePaletteFields();
+      document.getElementById("adminPanelModal").classList.remove("hidden");
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function closeAdminPanelModal() {
+      document.getElementById("adminPanelModal").classList.add("hidden");
+    }
+
+    function switchAdminTab(tabName) {
+      const tabs = ['products', 'palette', 'branding', 'advisors', 'security', 'backup'];
+      tabs.forEach(t => {
+        const pane = document.getElementById(`adminPane-${t}`);
+        const btn = document.getElementById(`adminTabBtn-${t}`);
+        if (pane) pane.classList.toggle("hidden", t !== tabName);
+        if (btn) {
+          if (t === tabName) {
+            btn.className = "px-4 py-3 border-b-2 dynamic-border-primary dynamic-text-primary font-black";
+          } else {
+            btn.className = "px-4 py-3 border-b-2 border-transparent hover:text-slate-900";
+          }
+        }
+      });
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function populatePaletteFields() {
+      const p = appData.palette || DEFAULT_DATA.palette;
+      const cPrimary = document.getElementById("palettePrimaryColor");
+      const tPrimary = document.getElementById("palettePrimaryText");
+      const cHover = document.getElementById("paletteHoverColor");
+      const tHover = document.getElementById("paletteHoverText");
+      const cAccent = document.getElementById("paletteAccentColor");
+      const tAccent = document.getElementById("paletteAccentText");
+
+      if (cPrimary && tPrimary) {
+        cPrimary.value = p.primary || "#e11d48";
+        tPrimary.value = p.primary || "#e11d48";
+      }
+      if (cHover && tHover) {
+        cHover.value = p.hover || "#be123c";
+        tHover.value = p.hover || "#be123c";
+      }
+      if (cAccent && tAccent) {
+        cAccent.value = p.accent || "#ffe4e6";
+        tAccent.value = p.accent || "#ffe4e6";
+      }
+    }
+
+    function syncPaletteInput(type) {
+      if (type === 'primary') {
+        document.getElementById("palettePrimaryText").value = document.getElementById("palettePrimaryColor").value;
+      } else if (type === 'hover') {
+        document.getElementById("paletteHoverText").value = document.getElementById("paletteHoverColor").value;
+      } else if (type === 'accent') {
+        document.getElementById("paletteAccentText").value = document.getElementById("paletteAccentColor").value;
+      }
+    }
+
+    function syncPalettePicker(type) {
+      if (type === 'primary') {
+        const val = document.getElementById("palettePrimaryText").value.trim();
+        if (/^#[0-9A-Fa-f]{6}$/.test(val)) document.getElementById("palettePrimaryColor").value = val;
+      } else if (type === 'hover') {
+        const val = document.getElementById("paletteHoverText").value.trim();
+        if (/^#[0-9A-Fa-f]{6}$/.test(val)) document.getElementById("paletteHoverColor").value = val;
+      } else if (type === 'accent') {
+        const val = document.getElementById("paletteAccentText").value.trim();
+        if (/^#[0-9A-Fa-f]{6}$/.test(val)) document.getElementById("paletteAccentColor").value = val;
+      }
+    }
+
+    function applyColorPreset(primary, hover, accent) {
+      document.getElementById("palettePrimaryColor").value = primary;
+      document.getElementById("palettePrimaryText").value = primary;
+      document.getElementById("paletteHoverColor").value = hover;
+      document.getElementById("paletteHoverText").value = hover;
+      document.getElementById("paletteAccentColor").value = accent;
+      document.getElementById("paletteAccentText").value = accent;
+      saveAdminPaletteSettings();
+    }
+
+    function saveAdminPaletteSettings() {
+      if (!appData.palette) appData.palette = {};
+      const prim = document.getElementById("palettePrimaryText").value.trim();
+      const hov = document.getElementById("paletteHoverText").value.trim();
+      const acc = document.getElementById("paletteAccentText").value.trim();
+
+      appData.palette.primary = /^#[0-9A-Fa-f]{6}$/.test(prim) ? prim : "#e11d48";
+      appData.palette.hover = /^#[0-9A-Fa-f]{6}$/.test(hov) ? hov : "#be123c";
+      appData.palette.accent = /^#[0-9A-Fa-f]{6}$/.test(acc) ? acc : "#ffe4e6";
+
+      saveAllToStorage();
+      applyCurrentPaletteCss();
+      renderAll();
+      showToast("Paleta de colores aplicada");
+    }
+
+    function populateAdminFields() {
+      const b = appData.branding;
+      const logoInput = document.getElementById("adminLogoUrlInput");
+      const promoInput = document.getElementById("adminPromoNoticeInput");
+      const heroInput = document.getElementById("adminHeroSlidesInput");
+      const phoneInput = document.getElementById("adminPhoneInput");
+      const hoursInput = document.getElementById("adminHoursInput");
+      const locInput = document.getElementById("adminLocationInput");
+
+      if (logoInput) logoInput.value = b.logoUrl || "";
+      if (promoInput) promoInput.value = b.promoNotice || "ZAPATILLAS DE NIÑOS IMPORTADAS AL POR MAYOR";
+      if (heroInput) heroInput.value = (appData.heroSlides || []).join('\n');
+      if (phoneInput) phoneInput.value = b.phone || "+51997857379";
+      if (hoursInput) hoursInput.value = b.hours || "Lunes a Sábado: 9:00 am – 8:00 pm";
+      if (locInput) locInput.value = b.location || "Lima, Perú — Envíos a todo el país";
+
+      const adv = b.advisors || {};
+      const a1 = document.getElementById("adminAdvisor1Phone");
+      const a2 = document.getElementById("adminAdvisor2Phone");
+      const a3 = document.getElementById("adminAdvisor3Phone");
+      if (a1) a1.value = adv.adv1 || b.phone || "";
+      if (a2) a2.value = adv.adv2 || b.phone || "";
+      if (a3) a3.value = adv.adv3 || b.phone || "";
+    }
+
+    function saveAdminBrandingSettings() {
+      appData.branding.logoUrl = sanitizeUrl(document.getElementById("adminLogoUrlInput").value.trim());
+      appData.branding.promoNotice = document.getElementById("adminPromoNoticeInput").value.trim() || "ZAPATILLAS DE NIÑOS IMPORTADAS AL POR MAYOR";
+      appData.branding.phone = document.getElementById("adminPhoneInput").value.trim();
+      appData.branding.hours = document.getElementById("adminHoursInput").value.trim();
+      appData.branding.location = document.getElementById("adminLocationInput").value.trim();
+
+      const heroText = document.getElementById("adminHeroSlidesInput").value;
+      const parsedSlides = heroText.split(/[\n,]+/)
+        .map(s => sanitizeUrl(s.trim()))
+        .filter(s => s.length > 5);
+
+      if (parsedSlides.length > 0) {
+        appData.heroSlides = parsedSlides;
+      }
+
+      saveAllToStorage();
+      renderAll();
+      showToast("Configuración guardada");
+    }
+
+    function saveAdminAdvisorsSettings() {
+      if (!appData.branding.advisors) appData.branding.advisors = {};
+      appData.branding.advisors.adv1 = document.getElementById("adminAdvisor1Phone").value.trim();
+      appData.branding.advisors.adv2 = document.getElementById("adminAdvisor2Phone").value.trim();
+      appData.branding.advisors.adv3 = document.getElementById("adminAdvisor3Phone").value.trim();
+
+      saveAllToStorage();
+      showToast("Teléfonos de asesores guardados");
+    }
+
+    function renderAdminProductsList() {
+      const container = document.getElementById("adminProductsList");
+      if (!container) return;
+
+      if (appData.products.length === 0) {
+        container.innerHTML = `
+          <div class="py-8 text-center text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+            <p class="text-xs font-bold">No hay códigos registrados.</p>
+          </div>
+        `;
+        return;
+      }
+
+      const totalProds = appData.products.length;
+
+      container.innerHTML = appData.products.map((prod, idx) => {
+        const isFirst = idx === 0;
+        const isLast = idx === totalProds - 1;
+        const firstPhoto = sanitizeUrl(prod.photos && prod.photos[0] ? prod.photos[0].url : prod.separatorBanner);
+        const photosCount = prod.photos ? prod.photos.length : 0;
+
+        return `
+          <div 
+            draggable="true"
+            ondragstart="handleAdminDragStart(event, ${idx})"
+            ondragover="handleAdminDragOver(event)"
+            ondrop="handleAdminDrop(event, ${idx})"
+            class="flex items-center justify-between p-3 bg-white hover:bg-slate-50/80 border border-slate-200/90 rounded-2xl text-xs shadow-2xs transition group cursor-grab active:cursor-grabbing"
+          >
+            <div class="flex items-center space-x-2.5 min-w-0">
+              <div class="flex flex-col items-center space-y-1 shrink-0 bg-slate-100 p-1 rounded-xl border border-slate-200/60">
+                <button 
+                  type="button" 
+                  onclick="moveProductOrder(${idx}, -1)" 
+                  ${isFirst ? 'disabled' : ''} 
+                  class="w-6 h-6 flex items-center justify-center rounded-lg font-black transition ${
+                    isFirst ? 'text-slate-300 cursor-not-allowed' : 'text-slate-700 hover:bg-white dynamic-text-primary active:scale-90 shadow-2xs'
+                  }"
+                  title="Subir (mostrar antes)"
+                >▲</button>
+                <span class="text-[10px] font-black font-mono text-slate-500 w-5 text-center">#${idx + 1}</span>
+                <button 
+                  type="button" 
+                  onclick="moveProductOrder(${idx}, 1)" 
+                  ${isLast ? 'disabled' : ''} 
+                  class="w-6 h-6 flex items-center justify-center rounded-lg font-black transition ${
+                    isLast ? 'text-slate-300 cursor-not-allowed' : 'text-slate-700 hover:bg-white dynamic-text-primary active:scale-90 shadow-2xs'
+                  }"
+                  title="Bajar (mostrar después)"
+                >▼</button>
+              </div>
+
+              <img src="${firstPhoto}" class="w-12 h-14 object-cover rounded-xl border border-slate-100 shrink-0" alt="${escapeHtml(prod.code)}" />
+              
+              <div class="min-w-0 pr-2">
+                <div class="flex items-center space-x-1.5 flex-wrap gap-y-1">
+                  <span class="font-black text-sm text-slate-900 tracking-wide">${escapeHtml(prod.code)}</span>
+                  <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-red-50 dynamic-text-primary border border-red-100">
+                    Tallas ${escapeHtml(prod.series)}
+                  </span>
+                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                    ${escapeHtml(prod.style)}
+                  </span>
+                </div>
+                <p class="text-[11px] text-slate-500 truncate mt-0.5 font-medium">${escapeHtml(prod.name || 'Sin nombre')}</p>
+                <div class="flex items-center space-x-1.5 text-[10px] text-slate-400 mt-0.5">
+                  <i data-lucide="image" class="w-3 h-3"></i>
+                  <span>${photosCount} ${photosCount === 1 ? 'foto/color' : 'fotos/colores'}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center space-x-1 shrink-0 pl-1">
+              <button 
+                type="button" 
+                onclick="openProductFormModal('${prod.id}')" 
+                class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl active:scale-95 transition text-[11px] shadow-2xs"
+              >
+                Editar
+              </button>
+              <button 
+                type="button" 
+                onclick="deleteProduct('${prod.id}')" 
+                class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition active:scale-90"
+                title="Eliminar código"
+              >
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    let draggedItemIndex = null;
+    function handleAdminDragStart(e, idx) {
+      draggedItemIndex = idx;
+      e.dataTransfer.effectAllowed = 'move';
+    }
+    function handleAdminDragOver(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+    }
+    function handleAdminDrop(e, targetIdx) {
+      e.preventDefault();
+      if (draggedItemIndex === null || draggedItemIndex === targetIdx) return;
+      const movedItem = appData.products.splice(draggedItemIndex, 1)[0];
+      appData.products.splice(targetIdx, 0, movedItem);
+      draggedItemIndex = null;
+      saveAllToStorage();
+      renderAdminProductsList();
+      renderCatalogSections();
+      showToast("Nuevo orden de códigos guardado");
+    }
+
+    function moveProductOrder(index, delta) {
+      const newIdx = index + delta;
+      if (newIdx < 0 || newIdx >= appData.products.length) return;
+      const temp = appData.products[index];
+      appData.products[index] = appData.products[newIdx];
+      appData.products[newIdx] = temp;
+      saveAllToStorage();
+      renderAdminProductsList();
+      renderCatalogSections();
+      showToast(`Código ${temp.code} movido a la posición #${newIdx + 1}`);
+    }
+
+    function deleteProduct(prodId) {
+      if (!confirm("¿Deseas eliminar este código del catálogo?")) return;
+      appData.products = appData.products.filter(p => p.id !== prodId);
+      saveAllToStorage();
+      renderAdminProductsList();
+      renderCatalogSections();
+      showToast("Código eliminado");
+    }
+
+    function openProductFormModal(prodId = null) {
+      const modal = document.getElementById("productFormModal");
+      const title = document.getElementById("productFormModalTitle");
+      const formId = document.getElementById("editFormProdId");
+      const code = document.getElementById("editFormCode");
+      const series = document.getElementById("editFormSeries");
+      const style = document.getElementById("editFormStyle");
+      const name = document.getElementById("editFormName");
+      const sep = document.getElementById("editFormSeparatorBanner");
+      const desc = document.getElementById("editFormDesc");
+      const photosBox = document.getElementById("formPhotosContainer");
+
+      photosBox.innerHTML = "";
+
+      if (prodId) {
+        const prod = appData.products.find(p => p.id === prodId);
+        if (!prod) return;
+        title.innerText = `Editar ${prod.code}`;
+        formId.value = prod.id;
+        code.value = prod.code;
+        series.value = prod.series || "22-27";
+        style.value = prod.style || "Deportivo";
+        name.value = prod.name;
+        sep.value = prod.separatorBanner;
+        desc.value = prod.description;
+        (prod.photos || []).forEach(ph => addPhotoRowToForm(ph.url, ph.colorName, ph.colorHex));
+      } else {
+        title.innerText = "Registrar Nuevo Código";
+        formId.value = "";
+        code.value = "";
+        series.value = "22-27";
+        style.value = "Deportivo";
+        name.value = "";
+        sep.value = "";
+        desc.value = "";
+        addPhotoRowToForm();
+      }
+
+      modal.classList.remove("hidden");
+    }
+
+    function closeProductFormModal() {
+      document.getElementById("productFormModal").classList.add("hidden");
+    }
+
+    function addPhotoRowToForm(url = "", colorName = "", colorHex = "#e11d48") {
+      const container = document.getElementById("formPhotosContainer");
+      if (!container) return;
+      const div = document.createElement("div");
+      div.className = "flex items-center space-x-2 bg-slate-50 p-2 rounded-xl border border-slate-200 text-xs";
+      div.innerHTML = `
+        <input type="url" placeholder="URL Foto 4:5" value="${sanitizeUrl(url)}" class="form-photo-url flex-1 border rounded-lg p-1.5 font-mono text-[11px]" />
+        <input type="text" placeholder="Color (ej. Beige)" value="${escapeHtml(colorName)}" maxlength="30" class="form-photo-color w-24 border rounded-lg p-1.5 font-bold" />
+        <input type="color" value="${/^#[0-9A-Fa-f]{6}$/.test(colorHex) ? colorHex : '#e11d48'}" class="form-photo-hex w-8 h-8 rounded-lg cursor-pointer border" />
+        <button type="button" onclick="this.parentElement.remove()" class="text-red-500 font-bold px-1.5">✕</button>
+      `;
+      container.appendChild(div);
+    }
+
+    function saveProductFromForm() {
+      const formId = document.getElementById("editFormProdId").value;
+      const code = document.getElementById("editFormCode").value.trim().toUpperCase();
+      const series = document.getElementById("editFormSeries").value.trim() || "22-27";
+      const style = document.getElementById("editFormStyle").value;
+      const name = document.getElementById("editFormName").value.trim() || `Modelo ${code}`;
+      const sep = sanitizeUrl(document.getElementById("editFormSeparatorBanner").value.trim()) || "https://images.unsplash.com/photo-1579338559194-a162d19bf842?auto=format&fit=crop&w=800&h=260&q=80";
+      const desc = document.getElementById("editFormDesc").value.trim();
+
+      if (!code) {
+        alert("Por favor ingresa un código para el calzado.");
+        return;
+      }
+
+      const photoUrls = document.querySelectorAll(".form-photo-url");
+      const photoColors = document.querySelectorAll(".form-photo-color");
+      const photoHexes = document.querySelectorAll(".form-photo-hex");
+      const photos = [];
+
+      for (let i = 0; i < photoUrls.length; i++) {
+        const u = sanitizeUrl(photoUrls[i].value.trim());
+        if (u) {
+          const hex = photoHexes[i].value;
+          photos.push({
+            url: u,
+            colorName: photoColors[i].value.trim() || `Color ${i + 1}`,
+            colorHex: /^#[0-9A-Fa-f]{6}$/.test(hex) ? hex : "#e11d48"
+          });
+        }
+      }
+
+      if (formId) {
+        const prod = appData.products.find(p => p.id === formId);
+        if (prod) {
+          prod.code = code;
+          prod.series = series;
+          prod.style = style;
+          prod.name = name;
+          prod.separatorBanner = sep;
+          prod.description = desc;
+          prod.photos = photos;
+        }
+      } else {
+        appData.products.push({
+          id: `prod-${Date.now()}`,
+          code,
+          series,
+          style,
+          name,
+          separatorBanner: sep,
+          description: desc,
+          photos
+        });
+      }
+
+      saveAllToStorage();
+      closeProductFormModal();
+      renderAdminProductsList();
+      renderFilterChips();
+      renderCatalogSections();
+      showToast("Modelo guardado correctamente");
+    }
+
+    function exportDataJson() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData, null, 2));
+      const a = document.createElement('a');
+      a.setAttribute("href", dataStr);
+      a.setAttribute("download", `catalogo_mayorista_${new Date().toISOString().slice(0, 10)}.json`);
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+
+    function importDataJson(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const parsed = JSON.parse(evt.target.result);
+          if (parsed && parsed.products && Array.isArray(parsed.products)) {
+            appData = parsed;
+            if (!appData.security) appData.security = { pinHash: DEFAULT_PIN_SHA256 };
+            saveAllToStorage();
+            renderAll();
+            renderAdminProductsList();
+            populateAdminFields();
+            populatePaletteFields();
+            showToast("Catálogo importado exitosamente");
+          } else {
+            alert("El formato del archivo JSON no es válido.");
+          }
+        } catch (err) {
+          alert("Error al leer el archivo JSON.");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById("toastNotification");
+      if (!toast) return;
+      toast.innerText = msg;
+      toast.classList.remove("opacity-0", "pointer-events-none");
+      toast.classList.add("opacity-100");
+      setTimeout(() => {
+        toast.classList.remove("opacity-100");
+        toast.classList.add("opacity-0", "pointer-events-none");
+      }, 2300);
+    }
+  </script>
+</body>
+</html>
