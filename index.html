@@ -1169,6 +1169,20 @@
       showToast("¡Clave alfanumérica actualizada correctamente!");
     }
 
+    // ----------------------------------------------------
+    // FUNCIÓN DE GUARDADO SEGURO Y PERSISTENCIA (FIX)
+    // ----------------------------------------------------
+    function saveAllToStorage() {
+      try {
+        localStorage.setItem('kicks_mayorista_store_v2', JSON.stringify(appData));
+        return true;
+      } catch (err) {
+        console.error("Error guardando datos en almacenamiento local:", err);
+        showToast("Advertencia: No se pudo escribir en el almacenamiento.");
+        return false;
+      }
+    }
+
     window.onload = function() {
       applyCurrentPaletteCss();
       renderAll();
@@ -2354,24 +2368,40 @@
     }
 
     function saveAdminBrandingSettings() {
-      appData.branding.logoUrl = sanitizeUrl(document.getElementById("adminLogoUrlInput").value.trim());
-      appData.branding.promoNotice = document.getElementById("adminPromoNoticeInput").value.trim() || "ZAPATILLAS DE NIÑOS IMPORTADAS AL POR MAYOR";
-      appData.branding.phone = document.getElementById("adminPhoneInput").value.trim();
-      appData.branding.hours = document.getElementById("adminHoursInput").value.trim();
-      appData.branding.location = document.getElementById("adminLocationInput").value.trim();
+      if (!appData.branding) appData.branding = {};
+      
+      const rawLogo = document.getElementById("adminLogoUrlInput") ? document.getElementById("adminLogoUrlInput").value.trim() : "";
+      const rawNotice = document.getElementById("adminPromoNoticeInput") ? document.getElementById("adminPromoNoticeInput").value.trim() : "";
+      const rawPhone = document.getElementById("adminPhoneInput") ? document.getElementById("adminPhoneInput").value.trim() : "";
+      const rawHours = document.getElementById("adminHoursInput") ? document.getElementById("adminHoursInput").value.trim() : "";
+      const rawLocation = document.getElementById("adminLocationInput") ? document.getElementById("adminLocationInput").value.trim() : "";
 
-      const heroText = document.getElementById("adminHeroSlidesInput").value;
-      const parsedSlides = heroText.split(/[\n,]+/)
-        .map(s => sanitizeUrl(s.trim()))
-        .filter(s => s.length > 5);
+      appData.branding.logoUrl = sanitizeUrl(rawLogo);
+      appData.branding.promoNotice = rawNotice || "CALZADO AL POR MAYOR — NUEVOS INGRESOS";
+      appData.branding.phone = rawPhone || "+51999999999";
+      appData.branding.hours = rawHours || "Atención de Lunes a Sábado";
+      appData.branding.location = rawLocation || "Envíos directos a todo el país";
 
-      if (parsedSlides.length > 0) {
-        appData.heroSlides = parsedSlides;
+      const heroInput = document.getElementById("adminHeroSlidesInput");
+      if (heroInput) {
+        const heroText = heroInput.value.trim();
+        if (heroText) {
+          const parsedSlides = heroText.split(/[\n,]+/)
+            .map(s => sanitizeUrl(s.trim()))
+            .filter(s => s && s.length > 5);
+
+          // Permite guardar desde 1 sola foto hasta 3 o más fotos sin bloquear
+          appData.heroSlides = parsedSlides;
+        } else {
+          appData.heroSlides = [];
+        }
       }
 
+      currentHeroIndex = 0;
       saveAllToStorage();
       renderAll();
-      showToast("Configuración guardada");
+      initHeroAutoCycle();
+      showToast("¡Configuración y portada guardadas exitosamente!");
     }
 
     function saveAdminAdvisorsSettings() {
