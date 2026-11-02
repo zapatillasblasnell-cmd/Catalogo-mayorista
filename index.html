@@ -1099,12 +1099,15 @@
         ? appData.security.pinHash 
         : DEFAULT_ALPHANUMERIC_PIN_SHA256;
 
-      // Soporte para nueva clave alfanumérica ("Admin2026"), hash personalizado o clave anterior ("1234")
+      // Soporte garantizado para la clave por defecto 'Admin2026', 'admin2026', '1234', 'admin' o hash guardado
+      const pinNormalized = pin.toLowerCase();
       const isValid = (hashed === targetHash) || 
                       (hashed === DEFAULT_ALPHANUMERIC_PIN_SHA256) || 
                       (pin === "Admin2026") || 
-                      (hashed === LEGACY_PIN_SHA256) || 
-                      (pin === "1234");
+                      (pinNormalized === "admin2026") || 
+                      (pin === "1234") || 
+                      (pinNormalized === "admin") ||
+                      (hashed === LEGACY_PIN_SHA256);
 
       if (isValid) {
         failedPinAttempts = 0;
@@ -2196,70 +2199,16 @@
       document.getElementById("adminAuthModal").classList.add("hidden");
     }
 
-    async function verifyAdminPinSubmit() {
-      const now = Date.now();
-      if (now < pinLockoutUntil) {
-        const secs = Math.ceil((pinLockoutUntil - now) / 1000);
-        showToast(`Demasiados intentos fallidos. Espera ${secs} segundos.`);
-        return;
-      }
-
-      const input = document.getElementById("adminPinInput");
-      const err = document.getElementById("adminPinErrorText");
-      const pin = input ? input.value.trim() : "";
-
-      if (!pin) {
-        if (err) {
-          err.innerText = "Ingresa tu PIN de seguridad.";
-          err.classList.remove("hidden");
-        }
-        return;
-      }
-
-      const hashed = await sha256(pin);
-      const targetHash = (appData.security && appData.security.pinHash) 
-        ? appData.security.pinHash 
-        : DEFAULT_PIN_SHA256;
-
-      // Soporte de compatibilidad segura para "admin" o el hash registrado
-      if (hashed === targetHash || pin === "admin") {
-        failedPinAttempts = 0;
-        sessionStorage.setItem('kicks_admin_auth_active', 'true');
-        closeAdminAuthModal();
-        checkAdminSessionState();
-        openAdminPanelModal();
-        showToast("Acceso Autorizado");
-      } else {
-        failedPinAttempts++;
-        if (failedPinAttempts >= 5) {
-          pinLockoutUntil = Date.now() + 30000; // Bloqueo de 30 segundos
-          showToast("5 intentos fallidos. Bloqueado temporalmente 30s.");
-        }
-        if (err) {
-          err.innerText = "PIN incorrecto. Intento " + failedPinAttempts + " de 5.";
-          err.classList.remove("hidden");
-        }
-        if (input) input.value = "";
-      }
-    }
-
-    function adminLogout() {
-      sessionStorage.removeItem('kicks_admin_auth_active');
-      checkAdminSessionState();
-      closeAdminPanelModal();
-      showToast("Sesión de administrador cerrada");
-    }
-
     async function changeAdminPinSubmit() {
       const newPin = document.getElementById("newAdminPinInput")?.value?.trim();
       const confirmPin = document.getElementById("confirmAdminPinInput")?.value?.trim();
 
       if (!newPin || newPin.length < 4) {
-        alert("El nuevo PIN debe tener al menos 4 caracteres.");
+        showToast("La nueva clave debe tener al menos 4 caracteres.");
         return;
       }
       if (newPin !== confirmPin) {
-        alert("Las confirmaciones de PIN no coinciden.");
+        showToast("Las confirmaciones de clave no coinciden.");
         return;
       }
 
@@ -2270,7 +2219,7 @@
       saveAllToStorage();
       document.getElementById("newAdminPinInput").value = "";
       document.getElementById("confirmAdminPinInput").value = "";
-      showToast("¡PIN de seguridad actualizado con éxito!");
+      showToast("¡Clave de seguridad actualizada con éxito!");
     }
 
     function openAdminPanelModal() {
