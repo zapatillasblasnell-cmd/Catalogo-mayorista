@@ -980,70 +980,18 @@
       },
       branding: {
         logoUrl: "",
-        promoNotice: "ZAPATILLAS DE NIÑOS IMPORTADAS AL POR MAYOR",
-        location: "Lima, Perú — Envíos a todo el país",
-        hours: "Lunes a Sábado: 9:00 am – 8:00 pm",
-        phone: "+51997857379",
+        promoNotice: "CALZADO AL POR MAYOR — NUEVOS INGRESOS",
+        location: "Envíos directos a todo el país",
+        hours: "Atención de Lunes a Sábado",
+        phone: "+51999999999",
         advisors: {
-          adv1: "51997857379",
-          adv2: "51997857379",
-          adv3: "51997857379"
+          adv1: "51999999999",
+          adv2: "51999999999",
+          adv3: "51999999999"
         }
       },
-      heroSlides: [
-        "https://images.unsplash.com/photo-1514989940723-e8e51635b782?auto=format&fit=crop&w=900&h=900&q=80",
-        "https://images.unsplash.com/photo-1515955656352-a1fa3ffcd111?auto=format&fit=crop&w=900&h=900&q=80",
-        "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=900&h=900&q=80"
-      ],
-      products: [
-        {
-          id: "prod-wb185",
-          code: "WB185",
-          name: "Deportivo Trekking Kids",
-          series: "22-27",
-          style: "Treking",
-          separatorBanner: "https://images.unsplash.com/photo-1579338559194-a162d19bf842?auto=format&fit=crop&w=800&h=260&q=80",
-          description: "Deportivo Trekking, excelente agarre, suela de caucho con antideslizante y cuero microfibra superresistente.",
-          photos: [
-            {
-              url: "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=800&h=1000&q=80",
-              colorName: "Beige / Marrón",
-              colorHex: "#c5a880"
-            },
-            {
-              url: "https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?auto=format&fit=crop&w=800&h=1000&q=80",
-              colorName: "Turquesa Fresh",
-              colorHex: "#2dd4bf"
-            },
-            {
-              url: "https://images.unsplash.com/photo-1551107696-a4b0c5a0d9a2?auto=format&fit=crop&w=800&h=1000&q=80",
-              colorName: "Rojo Pasión",
-              colorHex: "#ef4444"
-            }
-          ]
-        },
-        {
-          id: "prod-sk200",
-          code: "SK200",
-          name: "Urban Style Juvenil",
-          series: "26-31",
-          style: "Urbano",
-          separatorBanner: "https://images.unsplash.com/photo-1511556532299-8f662fc26c06?auto=format&fit=crop&w=800&h=260&q=80",
-          description: "Zapatilla urbana cómoda, plantilla anatómica y máxima duración.",
-          photos: [
-            {
-              url: "https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?auto=format&fit=crop&w=800&h=1000&q=80",
-              colorName: "Mostaza Clásico",
-              colorHex: "#eab308"
-            },
-            {
-              url: "https://images.unsplash.com/photo-1608231387042-66d1773070a5?auto=format&fit=crop&w=800&h=1000&q=80",
-              colorName: "Blanco Puro",
-              colorHex: "#ffffff"
-            }
-          ]
-        }
-      ]
+      heroSlides: [],
+      products: []
     };
 
     let appData = loadInitialData();
@@ -1096,6 +1044,13 @@
           const parsed = JSON.parse(stored);
           if (!parsed.security) {
             parsed.security = { pinHash: DEFAULT_PIN_SHA256 };
+          }
+          // Garantizar que no herede productos o fotos viejas de prueba
+          if (!parsed.products || !Array.isArray(parsed.products)) {
+            parsed.products = [];
+          }
+          if (!parsed.heroSlides || !Array.isArray(parsed.heroSlides)) {
+            parsed.heroSlides = [];
           }
           return parsed;
         }
@@ -1178,7 +1133,22 @@
 
       const slides = appData.heroSlides && appData.heroSlides.length > 0 
         ? appData.heroSlides 
-        : DEFAULT_DATA.heroSlides;
+        : [];
+
+      if (slides.length === 0) {
+        container.innerHTML = `
+          <div class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200 text-slate-400 p-6 text-center select-none">
+            <div class="w-14 h-14 rounded-2xl bg-white/80 border border-slate-300 flex items-center justify-center shadow-xs mb-2">
+              <i data-lucide="image" class="w-7 h-7 text-slate-400"></i>
+            </div>
+            <p class="text-xs font-black uppercase tracking-wider text-slate-600">Portadas 1:1 Disponibles</p>
+            <p class="text-[10px] text-slate-400 max-w-[240px] mt-0.5">Sube tus 3 imágenes de portada desde la pestaña "Logo y Portadas" en el panel administrativo.</p>
+          </div>
+        `;
+        dotsWrapper.innerHTML = '';
+        if (window.lucide) lucide.createIcons();
+        return;
+      }
 
       if (currentHeroIndex >= slides.length) currentHeroIndex = 0;
 
@@ -1397,14 +1367,48 @@
 
       if (list.length === 0) {
         container.innerHTML = "";
-        if (emptyBox) emptyBox.classList.remove("hidden");
+        if (emptyBox) {
+          emptyBox.classList.remove("hidden");
+          if (appData.products.length === 0) {
+            emptyBox.innerHTML = `
+              <div class="w-16 h-16 rounded-3xl bg-slate-100 text-slate-400 mx-auto flex items-center justify-center shadow-xs">
+                <i data-lucide="package-plus" class="w-8 h-8"></i>
+              </div>
+              <p class="text-sm font-black text-slate-800 uppercase tracking-wide">Catálogo Vacío y Listo</p>
+              <p class="text-xs text-slate-500 max-w-xs mx-auto">Aún no has registrado códigos. Ingresa al panel de administración para subir tus fotos y colecciones.</p>
+              <button 
+                type="button" 
+                onclick="requestAdminAccess()" 
+                class="dynamic-bg-primary text-white text-xs font-black py-2.5 px-6 rounded-xl hover:opacity-90 active:scale-95 transition shadow-md shadow-red-600/30"
+              >
+                + Registrar Primer Código
+              </button>
+            `;
+          } else {
+            emptyBox.innerHTML = `
+              <div class="w-16 h-16 rounded-full bg-slate-100 text-slate-400 mx-auto flex items-center justify-center">
+                <i data-lucide="package-x" class="w-8 h-8"></i>
+              </div>
+              <p class="text-sm font-bold text-slate-800">No hay modelos con este filtro</p>
+              <p class="text-xs text-slate-500 max-w-xs mx-auto">Prueba seleccionando otra serie o estilo para ver las colecciones mayoristas.</p>
+              <button 
+                type="button" 
+                onclick="resetAllCatalogFilters()" 
+                class="bg-slate-900 text-white text-xs font-bold py-2.5 px-5 rounded-xl hover:bg-slate-800 active:scale-95 transition"
+              >
+                Ver todo el catálogo
+              </button>
+            `;
+          }
+          if (window.lucide) lucide.createIcons();
+        }
         return;
       }
       if (emptyBox) emptyBox.classList.add("hidden");
 
       container.innerHTML = list.map(prod => {
         const photoGridHtml = generateAdaptivePhotoGridHtml(prod);
-        const safeBanner = sanitizeUrl(prod.separatorBanner) || 'https://images.unsplash.com/photo-1579338559194-a162d19bf842?auto=format&fit=crop&w=800&h=260&q=80';
+        const safeBanner = sanitizeUrl(prod.separatorBanner) || '';
         return `
           <section class="space-y-2.5" id="sec-prod-${prod.id}">
             <!-- BODEGÓN SEPARADOR: BORDES RECTOS SIN OVALADOS (Responsive) -->
@@ -1412,11 +1416,15 @@
               onclick="openProductDetailModal('${prod.id}')"
               class="relative w-full rounded-none overflow-hidden shadow-xs cursor-pointer group border border-slate-200 aspect-[16/6] md:aspect-[21/6] bg-slate-100"
             >
-              <img 
-                src="${safeBanner}" 
-                alt="Separador ${escapeHtml(prod.code)}" 
-                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
-              />
+              ${safeBanner ? `
+                <img 
+                  src="${safeBanner}" 
+                  alt="Separador ${escapeHtml(prod.code)}" 
+                  class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                />
+              ` : `
+                <div class="w-full h-full bg-gradient-to-r from-slate-800 to-slate-900"></div>
+              `}
               <div class="absolute inset-0 bg-gradient-to-r from-blue-600/85 via-blue-500/50 to-transparent flex flex-col justify-center px-4 md:px-8 text-white">
                 <span class="text-xl sm:text-2xl md:text-3xl font-black uppercase tracking-wider">${escapeHtml(prod.code)}</span>
                 <span class="text-xs md:text-sm font-bold text-white/95">Tallas: ${escapeHtml(prod.series)}</span>
