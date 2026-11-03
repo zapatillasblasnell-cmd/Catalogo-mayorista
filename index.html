@@ -82,7 +82,6 @@
           <i data-lucide="menu" class="w-6 h-6 stroke-[2.2]"></i>
         </button>
 
-        <!-- Logotipo (4 toques para entrar a admin) -->
         <div id="headerLogoWrapper" onclick="handleLogoSecretClicks()" class="flex-1 max-w-[210px] md:max-w-[280px] h-10 md:h-12 flex items-center justify-center mx-2 cursor-pointer group" title="Toca 4 veces para Administrador">
           <img id="headerLogoImg" src="" alt="Logotipo" class="max-h-full max-w-full object-contain hidden transition-transform group-hover:scale-105" />
           <div id="headerLogoFallback" class="border border-slate-300 px-5 py-1.5 rounded-sm tracking-[0.35em] text-xs md:text-sm font-black uppercase text-slate-900 group-hover:border-slate-800 transition">
@@ -402,7 +401,6 @@
             </h4>
             
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-              <!-- Primario -->
               <div class="space-y-1.5 p-3 rounded-xl bg-white border border-slate-200">
                 <label class="font-bold text-slate-700 block">Color Primario:</label>
                 <div class="flex items-center space-x-2">
@@ -411,7 +409,6 @@
                 </div>
               </div>
 
-              <!-- Hover -->
               <div class="space-y-1.5 p-3 rounded-xl bg-white border border-slate-200">
                 <label class="font-bold text-slate-700 block">Color Hover (Presión):</label>
                 <div class="flex items-center space-x-2">
@@ -420,7 +417,6 @@
                 </div>
               </div>
 
-              <!-- Acento -->
               <div class="space-y-1.5 p-3 rounded-xl bg-white border border-slate-200">
                 <label class="font-bold text-slate-700 block">Acento Suave:</label>
                 <div class="flex items-center space-x-2">
@@ -631,7 +627,7 @@
     Mensaje
   </div>
 
-  <!-- JAVASCRIPT LOGIC -->
+  <!-- JAVASCRIPT LOGIC DIRECTA Y ROBUSTA -->
   <script>
     const WHOLESALE_STEP = 6;
     const DEFAULT_ALPHANUMERIC_PIN_SHA256 = "b7a840938f6b21656b8eef2fcf452f41c9ee0ff36efd927d6052fb58f62506bc"; // Hash de Admin2026
@@ -774,7 +770,7 @@
         el.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-spin"></span><span>Guardando en la nube…</span>`;
         el.className = "text-[10px] text-amber-400 font-bold block";
       } else if (status === 'saved') {
-        el.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span><span>● Conectado a la Nube (Sincronizado en Vivo)</span>`;
+        el.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span><span>● Conectado a la Nube (Supabase)</span>`;
         el.className = "text-[10px] text-emerald-400 font-bold block";
       } else {
         el.innerHTML = `<span>○ Modo Local (Revisa la clave)</span>`;
@@ -1392,7 +1388,7 @@
     }
 
     function escapeHtml(str) {
-      if (str === null || str === undefined) return '';
+      if (!str) return '';
       return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
     }
 
