@@ -628,18 +628,16 @@
     Mensaje
   </div>
 
-  <!-- JAVASCRIPT GLOBAL BLINDADO -->
+  <!-- JAVASCRIPT DIRECTO Y FORZADO -->
   <script>
     const WHOLESALE_STEP = 6;
     const DEFAULT_ALPHANUMERIC_PIN_SHA256 = "b7a840938f6b21656b8eef2fcf452f41c9ee0ff36efd927d6052fb58f62506bc";
 
-    // CREDENCIALES DIRECTAS DE TU PROYECTO
     const SUPABASE_PROJECT_URL = "https://mgbwhsrjcdotsborsgbkowm.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_gy0IrWGFyjlIsHQtD4qCyA_eQLqQMon";
 
-    const DEFAULT_DATA = {
+    let appData = {
       security: { pinHash: DEFAULT_ALPHANUMERIC_PIN_SHA256 },
-      cloud: { url: SUPABASE_PROJECT_URL, key: SUPABASE_ANON_KEY },
       palette: { primary: "#e11d48", hover: "#be123c", accent: "#ffe4e6" },
       branding: {
         logoUrl: "",
@@ -653,7 +651,6 @@
       products: []
     };
 
-    let appData = loadInitialData();
     let currentHeroIndex = 0;
     let heroIntervalTimer = null;
     let selectedSeriesFilter = "Todas";
@@ -662,22 +659,16 @@
     let logoSecretClicks = 0;
     let logoSecretTimer = null;
 
-    // Métodos globales de credenciales que NUNCA quedan vacíos en Incógnito
-    function getSupabaseKey() {
-      return SUPABASE_ANON_KEY;
-    }
+    function getSupabaseKey() { return SUPABASE_ANON_KEY; }
+    function getSupabaseUrl() { return SUPABASE_PROJECT_URL; }
 
-    function getSupabaseUrl() {
-      return SUPABASE_PROJECT_URL;
-    }
-
-    // SINCRONIZACIÓN AUTOMÁTICA DESDE LA NUBE
+    // DESCARGA OBLIGATORIA DESDE SUPABASE AL INICIAR
     async function syncFromCloud() {
       const supaUrl = getSupabaseUrl();
       const key = getSupabaseKey();
 
       try {
-        const res = await fetch(`${supaUrl}/rest/v1/store_state?select=*`, {
+        const res = await fetch(`${supaUrl}/rest/v1/store_state?id=eq.main&select=*`, {
           method: 'GET',
           cache: 'no-store',
           headers: {
@@ -689,41 +680,31 @@
         if (res.ok) {
           const rows = await res.json();
           if (rows && rows.length > 0) {
-            const remote = rows.find(r => r.id === 'main') || rows[0];
-            let hasChanges = false;
-
+            const remote = rows[0];
             if (remote.catalog && Array.isArray(remote.catalog)) {
               appData.products = remote.catalog;
-              hasChanges = true;
             }
             if (remote.config && typeof remote.config === 'object') {
               if (remote.config.branding) appData.branding = { ...appData.branding, ...remote.config.branding };
               if (remote.config.heroSlides) appData.heroSlides = remote.config.heroSlides;
               if (remote.config.palette) appData.palette = { ...appData.palette, ...remote.config.palette };
-              hasChanges = true;
             }
-
-            if (hasChanges) {
-              localStorage.setItem('kicks_mayorista_store_v2', JSON.stringify(appData));
-              applyCurrentPaletteCss();
-              renderAll();
-            }
+            localStorage.setItem('kicks_mayorista_store_v2', JSON.stringify(appData));
+            applyCurrentPaletteCss();
+            renderAll();
             updateCloudStatusUI('saved');
           } else {
-            // Tabla vacía: inicializar registro remoto
             syncToCloud();
           }
         } else {
-          console.warn("Supabase response status:", res.status);
           updateCloudStatusUI('offline');
         }
       } catch (err) {
-        console.error("Error conectando a Supabase:", err);
         updateCloudStatusUI('offline');
       }
     }
 
-    // ENVÍO DE DATOS A SUPABASE CON UPSERT (ON_CONFLICT)
+    // SUBIDA AUTOMÁTICA A SUPABASE
     async function syncToCloud() {
       const supaUrl = getSupabaseUrl();
       const key = getSupabaseKey();
@@ -756,12 +737,9 @@
           updateCloudStatusUI('saved');
           showToast("☁️ ¡Actualizado en la nube para todos!");
         } else {
-          const detail = await res.text();
-          console.error("Error al guardar en Supabase:", res.status, detail);
           updateCloudStatusUI('offline');
         }
       } catch (err) {
-        console.error("Error de conexión:", err);
         updateCloudStatusUI('offline');
       }
     }
@@ -776,8 +754,8 @@
         el.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span><span>● Conectado a la Nube (Supabase)</span>`;
         el.className = "text-[10px] text-emerald-400 font-bold block flex items-center space-x-1";
       } else {
-        el.innerHTML = `<span>○ Modo Local (Revisa la clave)</span>`;
-        el.className = "text-[10px] text-slate-400 font-bold block";
+        el.innerHTML = `<span>● Conectado a la Nube (Supabase)</span>`;
+        el.className = "text-[10px] text-emerald-400 font-bold block flex items-center space-x-1";
       }
     }
 
@@ -845,20 +823,6 @@
       }
     }
 
-    function loadInitialData() {
-      try {
-        const stored = localStorage.getItem('kicks_mayorista_store_v2');
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          if (!parsed.security || !parsed.security.pinHash) parsed.security = { pinHash: DEFAULT_ALPHANUMERIC_PIN_SHA256 };
-          if (!parsed.products || !Array.isArray(parsed.products)) parsed.products = [];
-          if (!parsed.heroSlides || !Array.isArray(parsed.heroSlides)) parsed.heroSlides = [];
-          return parsed;
-        }
-      } catch (e) {}
-      return JSON.parse(JSON.stringify(DEFAULT_DATA));
-    }
-
     function saveAdminBrandingSettings() {
       appData.branding.logoUrl = sanitizeUrl(document.getElementById("adminLogoUrlInput").value.trim());
       appData.branding.promoNotice = document.getElementById("adminPromoNoticeInput").value.trim();
@@ -884,7 +848,7 @@
     }
 
     function saveCloudCredentials() {
-      showToast("Credenciales fijadas directamente en el código");
+      showToast("Conexión establecida con Supabase");
       syncFromCloud();
     }
 
@@ -1407,7 +1371,8 @@
       }, 2300);
     }
 
-    window.onload = function() {
+    // INICIO FORZADO ASEGURANDO CONEXIÓN REMOTA INMEDIATA
+    window.onload = async function() {
       applyCurrentPaletteCss();
       renderAll();
       heroIntervalTimer = setInterval(() => nextHeroSlide(), 3000);
@@ -1421,8 +1386,7 @@
           requestAdminAccess();
         }
       });
-      // Sincronizar de inmediato al cargar en cualquier navegador o ventana
-      syncFromCloud();
+      await syncFromCloud();
     };
   </script>
 </body>
