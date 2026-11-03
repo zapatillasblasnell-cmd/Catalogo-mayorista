@@ -677,7 +677,8 @@
         const raw = localStorage.getItem(LOCAL_KEY);
         if (!raw) return;
         const saved = JSON.parse(raw);
-        if (saved.security && saved.security.pinHash) appData.security = saved.security;
+        const OLD_WRONG_HASH = "b7a840938f6b21656b8eef2fcf452f41c9ee0ff36efd927d6052fb58f62506bc";
+        if (saved.security && saved.security.pinHash && saved.security.pinHash !== OLD_WRONG_HASH) appData.security = saved.security;
         if (onlySecurity) return;
         if (Array.isArray(saved.products)) appData.products = saved.products;
         if (saved.branding) appData.branding = { ...appData.branding, ...saved.branding };
