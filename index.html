@@ -67,8 +67,6 @@
   <section class="relative w-full aspect-square md:aspect-[16/9] lg:aspect-[21/9] bg-slate-100 overflow-hidden select-none">
     <div id="heroSlidesContainer" class="w-full h-full relative"></div>
     <div id="heroDotsWrapper" class="absolute bottom-3 left-0 right-0 flex items-center justify-center space-x-1.5 z-20 pointer-events-none"></div>
-    <button type="button" onclick="prevHeroSlide()" class="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 md:w-11 md:h-11 rounded-full bg-black/35 text-white flex items-center justify-center hover:bg-black/60 transition z-20" aria-label="Anterior"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
-    <button type="button" onclick="nextHeroSlide(true)" class="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 md:w-11 md:h-11 rounded-full bg-black/35 text-white flex items-center justify-center hover:bg-black/60 transition z-20" aria-label="Siguiente"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
   </section>
 
   <!-- PASTILLA -->
@@ -667,7 +665,7 @@ function openProductDetailModal(id){
         <i data-lucide="download" class="w-4 h-4"></i>
       </button>
 
-      <!-- Botón Agregar serie con estilo independiente[cite: 1] -->
+      <!-- Botón Agregar serie con estilo independiente -->
       <button type="button" onclick="addToCart('${escapeHtml(p.id)}',${i},'detail-${escapeHtml(p.id)}-${i}')" class="btn-add-cart absolute bottom-3 right-3 px-3.5 py-2.5 rounded-xl shadow-lg active:scale-95 transition flex items-center space-x-1.5 font-black text-xs">
         <i data-lucide="shopping-cart" class="w-4 h-4"></i>
         <span>Agregar + 6 pares</span>
