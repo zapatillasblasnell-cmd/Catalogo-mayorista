@@ -663,19 +663,22 @@
     let logoSecretClicks = 0;
     let logoSecretTimer = null;
 
-    function getSupabaseKey() {
+function getSupabaseKey() {
+      if (DEFAULT_SUPABASE_CONFIG && DEFAULT_SUPABASE_CONFIG.key && DEFAULT_SUPABASE_CONFIG.key.trim().length > 10) {
+        return DEFAULT_SUPABASE_CONFIG.key.trim();
+      }
       const storedKey = localStorage.getItem('sb_anon_key');
       if (storedKey && storedKey.trim().length > 10) return storedKey.trim();
-      const cloud = appData.cloud || {};
-      return (cloud.key && cloud.key.trim().length > 10) ? cloud.key.trim() : DEFAULT_SUPABASE_CONFIG.key;
+      return (appData.cloud && appData.cloud.key) ? appData.cloud.key.trim() : "";
     }
 
     function getSupabaseUrl() {
+      if (DEFAULT_SUPABASE_CONFIG && DEFAULT_SUPABASE_CONFIG.url && DEFAULT_SUPABASE_CONFIG.url.startsWith('http')) {
+        return DEFAULT_SUPABASE_CONFIG.url.trim().replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
+      }
       const storedUrl = localStorage.getItem('sb_project_url');
       if (storedUrl && storedUrl.startsWith('http')) return storedUrl.trim().replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
-      const cloud = appData.cloud || {};
-      const url = (cloud.url && cloud.url.startsWith('http')) ? cloud.url.trim() : DEFAULT_SUPABASE_CONFIG.url;
-      return url.replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
+      return "https://mgbwhsrjcdotsborsgbkowm.supabase.co";
     }
 
     // SINCRONIZACIÓN DESDE LA NUBE DIREKTA KEN UNIVERSAL
