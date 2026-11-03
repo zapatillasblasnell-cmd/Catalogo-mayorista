@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tienda Virtual y Catálogo Mayorista</title>
-  
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -204,7 +204,7 @@
         <span class="text-[10px] md:text-[11px] text-slate-500 font-medium" id="bottomBarSummaryDesc">Mínimo 6 pares (1 serie)</span>
       </div>
     </div>
-    
+
     <button type="button" onclick="openCartModal()" id="bottomBarActionBtn" class="dynamic-bg-primary hover:opacity-90 active:scale-95 text-white font-black text-xs md:text-sm py-2.5 px-3.5 md:px-4 rounded-xl flex items-center space-x-1.5 shadow-md shadow-rose-600/30 transition shrink-0 select-none">
       <i data-lucide="shopping-cart" class="w-4 h-4"></i>
       <span id="bottomBarActionText" class="tracking-wide whitespace-nowrap">Hacer mi pedido Mayorista</span>
@@ -324,16 +324,15 @@
       </div>
 
       <div class="space-y-2">
-        <input 
-          type="password" 
-          id="adminPinInput" 
-          maxlength="32" 
-          placeholder="Clave..." 
-          class="w-full text-center text-lg font-mono tracking-wider border border-slate-300 rounded-2xl py-3 px-4 outline-none bg-slate-50/50" 
+        <input
+          type="password"
+          id="adminPinInput"
+          maxlength="32"
+          placeholder="Clave..."
+          class="w-full text-center text-lg font-mono tracking-wider border border-slate-300 rounded-2xl py-3 px-4 outline-none bg-slate-50/50"
           onkeydown="if(event.key==='Enter') verifyAdminPinSubmit()"
         />
         <div id="adminPinErrorText" class="text-xs font-bold text-red-600 hidden text-center">Contraseña incorrecta.</div>
-        <div class="text-[10px] text-slate-400 text-center font-medium">Clave por defecto: <code class="bg-slate-100 px-1.5 py-0.5 rounded text-slate-700 font-bold">Admin2026</code></div>
       </div>
 
       <div class="grid grid-cols-2 gap-2 pt-1">
@@ -351,9 +350,8 @@
           <i data-lucide="sliders" class="w-5 h-5 text-amber-400"></i>
           <div>
             <h2 class="text-sm md:text-base font-black uppercase tracking-wider">Panel Administrativo Mayorista</h2>
-            <span id="cloudStatusLabel" class="text-[10px] text-emerald-400 font-bold block flex items-center space-x-1">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-              <span>● Conectado a la Nube (Supabase)</span>
+            <span id="cloudStatusLabel" class="text-[10px] text-slate-400 font-bold block flex items-center space-x-1">
+              <span>Comprobando nube…</span>
             </span>
           </div>
         </div>
@@ -380,7 +378,7 @@
 
       <!-- Contenido de Pestañas -->
       <div class="p-5 md:p-7 flex-1 overflow-y-auto no-scrollbar space-y-4">
-        
+
         <!-- 1: Modelos -->
         <div id="adminPane-products" class="space-y-4">
           <div class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/80 p-3.5 rounded-2xl flex items-center justify-between text-xs">
@@ -400,7 +398,7 @@
               <i data-lucide="palette" class="w-4 h-4 dynamic-text-primary"></i>
               <span>Personalizar Paleta Global del Sitio</span>
             </h4>
-            
+
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
               <div class="space-y-1.5 p-3 rounded-xl bg-white border border-slate-200">
                 <label class="font-bold text-slate-700 block">Color Primario:</label>
@@ -512,19 +510,19 @@
           <div class="bg-blue-50/70 border border-blue-200 p-4 rounded-2xl space-y-3">
             <div class="flex items-center space-x-2 text-blue-900 font-black text-sm">
               <i data-lucide="cloud" class="w-4 h-4 text-blue-600"></i>
-              <span>Conexión Nube con Supabase (Tiempo Real)</span>
+              <span>Conexión Nube con Supabase</span>
             </div>
             <div class="space-y-2">
               <div>
                 <label class="block text-[10px] font-bold uppercase text-blue-900 mb-0.5">Project URL de Supabase:</label>
-                <input type="url" id="cloudSupabaseUrl" value="https://mgbwhsrjcdotsborsgbkowm.supabase.co" class="w-full bg-white border border-blue-200 rounded-lg p-2 font-mono text-[11px] text-slate-800 outline-none" />
+                <input type="url" id="cloudSupabaseUrl" readonly class="w-full bg-white border border-blue-200 rounded-lg p-2 font-mono text-[11px] text-slate-800 outline-none" />
               </div>
-              <div>
-                <label class="block text-[10px] font-bold uppercase text-blue-900 mb-0.5">Publishable Key / Anon Key:</label>
-                <input type="password" id="cloudSupabaseKey" placeholder="sb_publishable_..." class="w-full bg-white border border-blue-200 rounded-lg p-2 font-mono text-[11px] text-slate-800 outline-none" />
-              </div>
+              <div id="cloudDiagText" class="text-[11px] font-semibold text-slate-600 bg-white border border-blue-100 rounded-lg p-2">Sin diagnóstico todavía.</div>
               <button type="button" onclick="saveCloudCredentials()" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition shadow-xs">
-                Guardar y Conectar Supabase
+                Probar conexión y recargar desde la nube
+              </button>
+              <button type="button" onclick="syncToCloud()" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl transition shadow-xs">
+                Forzar subida de mis datos a la nube
               </button>
             </div>
           </div>
@@ -563,7 +561,7 @@
 
       <div class="p-5 flex-1 overflow-y-auto no-scrollbar space-y-3 text-xs">
         <input type="hidden" id="editFormProdId" />
-        
+
         <div class="grid grid-cols-2 gap-2">
           <div class="space-y-1">
             <label class="font-bold text-slate-700">Código del Calzado:</label>
@@ -628,17 +626,22 @@
     Mensaje
   </div>
 
-  <!-- JAVASCRIPT DIRECTO Y FORZADO -->
   <script>
     const WHOLESALE_STEP = 6;
     const DEFAULT_ALPHANUMERIC_PIN_SHA256 = "b7a840938f6b21656b8eef2fcf452f41c9ee0ff36efd927d6052fb58f62506bc";
+    const LOCAL_KEY = 'kicks_mayorista_store_v2';
 
+    // ⚠️ Verifica esta URL en Supabase → Project Settings → API (copiar y pegar)
     const SUPABASE_PROJECT_URL = "https://mgbwhsrjcdotsborsgbkowm.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_gy0IrWGFyjlIsHQtD4qCyA_eQLqQMon";
 
+    const DEFAULT_DATA = {
+      palette: { primary: "#e11d48", hover: "#be123c", accent: "#ffe4e6" }
+    };
+
     let appData = {
       security: { pinHash: DEFAULT_ALPHANUMERIC_PIN_SHA256 },
-      palette: { primary: "#e11d48", hover: "#be123c", accent: "#ffe4e6" },
+      palette: { ...DEFAULT_DATA.palette },
       branding: {
         logoUrl: "",
         promoNotice: "ZAPATILLAS DE NIÑOS IMPORTADAS AL POR MAYOR",
@@ -658,58 +661,82 @@
     let cart = [];
     let logoSecretClicks = 0;
     let logoSecretTimer = null;
+    let cloudLoadedOk = false; // solo se permite subir si la nube se leyó correctamente
 
     function getSupabaseKey() { return SUPABASE_ANON_KEY; }
     function getSupabaseUrl() { return SUPABASE_PROJECT_URL; }
 
-    // DESCARGA OBLIGATORIA DESDE SUPABASE AL INICIAR
-    async function syncFromCloud() {
-      const supaUrl = getSupabaseUrl();
-      const key = getSupabaseKey();
+    function setCloudDiag(msg) {
+      const el = document.getElementById("cloudDiagText");
+      if (el) el.textContent = msg;
+    }
 
+    // Carga copia local (solo como respaldo y para recordar el PIN)
+    function loadLocalBackup(onlySecurity) {
       try {
-        const res = await fetch(`${supaUrl}/rest/v1/store_state?id=eq.main&select=*`, {
+        const raw = localStorage.getItem(LOCAL_KEY);
+        if (!raw) return;
+        const saved = JSON.parse(raw);
+        if (saved.security && saved.security.pinHash) appData.security = saved.security;
+        if (onlySecurity) return;
+        if (Array.isArray(saved.products)) appData.products = saved.products;
+        if (saved.branding) appData.branding = { ...appData.branding, ...saved.branding };
+        if (Array.isArray(saved.heroSlides)) appData.heroSlides = saved.heroSlides;
+        if (saved.palette) appData.palette = { ...appData.palette, ...saved.palette };
+      } catch (_) {}
+    }
+
+    // LECTURA DESDE SUPABASE (nunca sube datos automáticamente)
+    async function syncFromCloud() {
+      const key = getSupabaseKey();
+      try {
+        const res = await fetch(`${getSupabaseUrl()}/rest/v1/store_state?id=eq.main&select=*`, {
           method: 'GET',
           cache: 'no-store',
-          headers: {
-            'apikey': key,
-            'Authorization': `Bearer ${key}`
-          }
+          headers: { 'apikey': key, 'Authorization': `Bearer ${key}` }
         });
 
-        if (res.ok) {
-          const rows = await res.json();
-          if (rows && rows.length > 0) {
-            const remote = rows[0];
-            if (remote.catalog && Array.isArray(remote.catalog)) {
-              appData.products = remote.catalog;
-            }
-            if (remote.config && typeof remote.config === 'object') {
-              if (remote.config.branding) appData.branding = { ...appData.branding, ...remote.config.branding };
-              if (remote.config.heroSlides) appData.heroSlides = remote.config.heroSlides;
-              if (remote.config.palette) appData.palette = { ...appData.palette, ...remote.config.palette };
-            }
-            localStorage.setItem('kicks_mayorista_store_v2', JSON.stringify(appData));
-            applyCurrentPaletteCss();
-            renderAll();
-            updateCloudStatusUI('saved');
-          } else {
-            syncToCloud();
-          }
-        } else {
-          updateCloudStatusUI('offline');
+        if (!res.ok) {
+          const body = await res.text();
+          console.error('Supabase lectura error', res.status, body);
+          setCloudDiag(`❌ Lectura falló (HTTP ${res.status}). Revisa URL, tabla y políticas RLS.`);
+          updateCloudStatusUI('error');
+          return;
         }
+
+        const rows = await res.json();
+        cloudLoadedOk = true;
+
+        if (rows && rows.length > 0) {
+          const remote = rows[0];
+          if (remote.catalog && Array.isArray(remote.catalog)) appData.products = remote.catalog;
+          if (remote.config && typeof remote.config === 'object') {
+            if (remote.config.branding) appData.branding = { ...appData.branding, ...remote.config.branding };
+            if (remote.config.heroSlides) appData.heroSlides = remote.config.heroSlides;
+            if (remote.config.palette) appData.palette = { ...appData.palette, ...remote.config.palette };
+          }
+          try { localStorage.setItem(LOCAL_KEY, JSON.stringify(appData)); } catch (_) {}
+          setCloudDiag(`✅ Lectura correcta: ${appData.products.length} códigos en la nube.`);
+          updateCloudStatusUI('saved');
+        } else {
+          // Tabla vacía: NO se sube nada automáticamente.
+          setCloudDiag("⚠️ La nube responde pero no hay datos todavía. Entra al admin y guarda algo para crear el registro.");
+          updateCloudStatusUI('saved');
+        }
+        applyCurrentPaletteCss();
+        renderAll();
       } catch (err) {
-        updateCloudStatusUI('offline');
+        console.error(err);
+        setCloudDiag("❌ No se pudo conectar con Supabase (red o URL incorrecta).");
+        updateCloudStatusUI('error');
       }
     }
 
-    // SUBIDA AUTOMÁTICA A SUPABASE
+    // ESCRITURA A SUPABASE (solo desde acciones del admin)
     async function syncToCloud() {
-      const supaUrl = getSupabaseUrl();
       const key = getSupabaseKey();
-
       updateCloudStatusUI('saving');
+
       const payload = {
         id: 'main',
         catalog: appData.products || [],
@@ -722,25 +749,33 @@
       };
 
       try {
-        const res = await fetch(`${supaUrl}/rest/v1/store_state?on_conflict=id`, {
+        const res = await fetch(`${getSupabaseUrl()}/rest/v1/store_state?on_conflict=id`, {
           method: 'POST',
           headers: {
             'apikey': key,
             'Authorization': `Bearer ${key}`,
             'Content-Type': 'application/json',
-            'Prefer': 'resolution=merge-duplicates,return=representation'
+            'Prefer': 'resolution=merge-duplicates,return=minimal'
           },
           body: JSON.stringify(payload)
         });
 
         if (res.ok) {
           updateCloudStatusUI('saved');
+          setCloudDiag("✅ Guardado en la nube correctamente.");
           showToast("☁️ ¡Actualizado en la nube para todos!");
         } else {
-          updateCloudStatusUI('offline');
+          const body = await res.text();
+          console.error('Supabase escritura error', res.status, body);
+          updateCloudStatusUI('error');
+          setCloudDiag(`❌ Escritura falló (HTTP ${res.status}): ${body.slice(0, 160)}`);
+          showToast(`❌ No se guardó en la nube (${res.status})`);
         }
       } catch (err) {
-        updateCloudStatusUI('offline');
+        console.error(err);
+        updateCloudStatusUI('error');
+        setCloudDiag("❌ Sin conexión con la nube al guardar.");
+        showToast("❌ Sin conexión con la nube");
       }
     }
 
@@ -751,11 +786,11 @@
         el.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-spin"></span><span>Guardando en la nube…</span>`;
         el.className = "text-[10px] text-amber-400 font-bold block flex items-center space-x-1";
       } else if (status === 'saved') {
-        el.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span><span>● Conectado a la Nube (Supabase)</span>`;
+        el.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span><span>● Conectado a la Nube (Supabase)</span>`;
         el.className = "text-[10px] text-emerald-400 font-bold block flex items-center space-x-1";
       } else {
-        el.innerHTML = `<span>● Conectado a la Nube (Supabase)</span>`;
-        el.className = "text-[10px] text-emerald-400 font-bold block flex items-center space-x-1";
+        el.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-red-400"></span><span>● Sin conexión / error con la nube</span>`;
+        el.className = "text-[10px] text-red-400 font-bold block flex items-center space-x-1";
       }
     }
 
@@ -776,7 +811,7 @@
       saveAllToStorage();
       applyCurrentPaletteCss();
       renderAll();
-      showToast("🎨 ¡Paleta guardada y sincronizada!");
+      showToast("🎨 Paleta aplicada");
     }
 
     function applyCurrentPaletteCss() {
@@ -798,29 +833,20 @@
 
     function populatePaletteFields() {
       const p = appData.palette || DEFAULT_DATA.palette;
-      const cPrimary = document.getElementById("palettePrimaryColor");
-      const tPrimary = document.getElementById("palettePrimaryCode");
-      const cHover = document.getElementById("paletteHoverColor");
-      const tHover = document.getElementById("paletteHoverCode");
-      const cAccent = document.getElementById("paletteAccentColor");
-      const tAccent = document.getElementById("paletteAccentCode");
-
-      if (cPrimary) cPrimary.value = p.primary || "#e11d48";
-      if (tPrimary) tPrimary.value = p.primary || "#e11d48";
-      if (cHover) cHover.value = p.hover || "#be123c";
-      if (tHover) tHover.value = p.hover || "#be123c";
-      if (cAccent) cAccent.value = p.accent || "#ffe4e6";
-      if (tAccent) tAccent.value = p.accent || "#ffe4e6";
+      const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+      set("palettePrimaryColor", p.primary || "#e11d48");
+      set("palettePrimaryCode", p.primary || "#e11d48");
+      set("paletteHoverColor", p.hover || "#be123c");
+      set("paletteHoverCode", p.hover || "#be123c");
+      set("paletteAccentColor", p.accent || "#ffe4e6");
+      set("paletteAccentCode", p.accent || "#ffe4e6");
     }
 
+    // Guarda copia local y sube a la nube (solo se llama desde acciones del admin)
     function saveAllToStorage() {
-      try {
-        localStorage.setItem('kicks_mayorista_store_v2', JSON.stringify(appData));
-        syncToCloud();
-        return true;
-      } catch (err) {
-        return false;
-      }
+      try { localStorage.setItem(LOCAL_KEY, JSON.stringify(appData)); } catch (_) {}
+      syncToCloud();
+      return true;
     }
 
     function saveAdminBrandingSettings() {
@@ -834,7 +860,6 @@
 
       saveAllToStorage();
       renderAll();
-      showToast("¡Marca y portadas guardadas!");
     }
 
     function saveAdminAdvisorsSettings() {
@@ -844,12 +869,11 @@
         adv3: document.getElementById("adminAdvisor3Phone").value.trim()
       };
       saveAllToStorage();
-      showToast("Teléfonos de asesores guardados");
     }
 
-    function saveCloudCredentials() {
-      showToast("Conexión establecida con Supabase");
-      syncFromCloud();
+    async function saveCloudCredentials() {
+      setCloudDiag("Probando conexión…");
+      await syncFromCloud();
     }
 
     function renderAll() {
@@ -932,40 +956,29 @@
       const styleContainer = document.getElementById("styleChipsContainer");
       if (!seriesContainer || !styleContainer) return;
 
-      const seriesData = [
-        { id: "Todas", label: "Todas" },
-        { id: "18-23", label: "18-23" },
-        { id: "22-27", label: "22-27" },
-        { id: "26-31", label: "26-31" },
-        { id: "31-36", label: "31-36" },
-        { id: "36-41", label: "36-41" }
-      ];
+      const seriesData = ["Todas", "18-23", "22-27", "26-31", "31-36", "36-41"];
+      const stylesData = ["Todos", "Deportivo", "Urbano", "Treking", "Blanco"];
 
-      const stylesData = [
-        { id: "Todos", label: "Todos" },
-        { id: "Deportivo", label: "Deportivo" },
-        { id: "Urbano", label: "Urbano" },
-        { id: "Treking", label: "Treking" },
-        { id: "Blanco", label: "Blanco" }
-      ];
-
-      seriesContainer.innerHTML = seriesData.map(item => {
-        const isSel = selectedSeriesFilter === item.id;
+      seriesContainer.innerHTML = seriesData.map(id => {
+        const isSel = selectedSeriesFilter === id;
         return `
-          <button type="button" onclick="selectedSeriesFilter='${item.id}'; renderFilterChips(); renderCatalogSections();" class="group shrink-0 px-3.5 py-2 rounded-2xl transition-all border ${isSel ? 'dynamic-bg-primary text-white border-transparent shadow-md' : 'bg-white text-slate-700 border-slate-200'}">
-            <span class="text-xs font-black">${item.label}</span>
+          <button type="button" onclick="selectedSeriesFilter='${id}'; renderFilterChips(); renderCatalogSections();" class="group shrink-0 px-3.5 py-2 rounded-2xl transition-all border ${isSel ? 'dynamic-bg-primary text-white border-transparent shadow-md' : 'bg-white text-slate-700 border-slate-200'}">
+            <span class="text-xs font-black">${id}</span>
           </button>
         `;
       }).join('');
 
-      styleContainer.innerHTML = stylesData.map(st => {
-        const isSel = selectedStyleFilter.toLowerCase() === st.id.toLowerCase();
+      styleContainer.innerHTML = stylesData.map(id => {
+        const isSel = selectedStyleFilter.toLowerCase() === id.toLowerCase();
         return `
-          <button type="button" onclick="selectedStyleFilter='${st.id}'; renderFilterChips(); renderCatalogSections();" class="group shrink-0 px-4 py-2 rounded-full text-xs font-black transition-all border ${isSel ? 'bg-slate-900 text-white' : 'bg-white text-slate-700 border-slate-200'}">
-            <span>${st.label}</span>
+          <button type="button" onclick="selectedStyleFilter='${id}'; renderFilterChips(); renderCatalogSections();" class="group shrink-0 px-4 py-2 rounded-full text-xs font-black transition-all border ${isSel ? 'bg-slate-900 text-white' : 'bg-white text-slate-700 border-slate-200'}">
+            <span>${id}</span>
           </button>
         `;
       }).join('');
+
+      const row = document.getElementById("filterStatusRow");
+      if (row) row.classList.toggle("hidden", selectedSeriesFilter === "Todas" && selectedStyleFilter === "Todos");
     }
 
     function resetAllCatalogFilters() {
@@ -980,7 +993,7 @@
       const emptyBox = document.getElementById("emptyCatalogBox");
       if (!container) return;
 
-      let list = appData.products.filter(p => {
+      const list = appData.products.filter(p => {
         const matchSer = (selectedSeriesFilter === "Todas") || (p.series === selectedSeriesFilter);
         const matchSty = (selectedStyleFilter === "Todos") || ((p.style || "").toLowerCase() === selectedStyleFilter.toLowerCase());
         return matchSer && matchSty;
@@ -995,17 +1008,17 @@
 
       container.innerHTML = list.map(prod => `
         <section class="space-y-2.5">
-          <div onclick="openProductDetailModal('${prod.id}')" class="relative w-full overflow-hidden shadow-xs cursor-pointer aspect-[16/6] bg-slate-800 rounded-2xl flex items-center px-4 text-white">
+          <div onclick="openProductDetailModal('${escapeHtml(prod.id)}')" class="relative w-full overflow-hidden shadow-xs cursor-pointer aspect-[16/6] bg-slate-800 rounded-2xl flex items-center px-4 text-white">
             <div>
               <span class="text-xl font-black">${escapeHtml(prod.code)}</span>
               <span class="text-xs block opacity-80">Tallas: ${escapeHtml(prod.series)}</span>
             </div>
           </div>
           <div class="grid grid-cols-2 gap-2">
-            ${(prod.photos || []).map((ph) => `
+            ${(prod.photos || []).map((ph, phIdx) => `
               <div class="relative aspect-[4/5] rounded-xl overflow-hidden bg-slate-100">
                 <img src="${sanitizeUrl(ph.url)}" class="w-full h-full object-cover" />
-                <button type="button" onclick="addToCart({ id: '${prod.id}', code: '${prod.code}', series: '${prod.series}', colorName: '${ph.colorName}', imageUrl: '${ph.url}' });" class="absolute bottom-2 right-2 dynamic-bg-primary text-white text-[11px] font-black px-2.5 py-1.5 rounded-lg shadow">+6 pares</button>
+                <button type="button" onclick="addToCart('${escapeHtml(prod.id)}', ${phIdx})" class="absolute bottom-2 right-2 dynamic-bg-primary text-white text-[11px] font-black px-2.5 py-1.5 rounded-lg shadow">+6 pares</button>
               </div>
             `).join('')}
           </div>
@@ -1021,11 +1034,12 @@
       document.getElementById("modalDetailContent").innerHTML = `
         <div class="p-4 space-y-4">
           <p class="text-sm font-bold text-slate-800">${escapeHtml(prod.name || '')}</p>
+          ${prod.description ? `<p class="text-xs text-slate-500">${escapeHtml(prod.description)}</p>` : ''}
           <div class="grid grid-cols-2 gap-2">
             ${(prod.photos || []).map(ph => `
               <div class="relative aspect-[4/5] rounded-xl overflow-hidden bg-slate-100">
                 <img src="${sanitizeUrl(ph.url)}" class="w-full h-full object-cover" />
-                <span class="absolute top-2 left-2 bg-black/50 text-white text-[10px] px-2 py-0.5 rounded">${ph.colorName}</span>
+                <span class="absolute top-2 left-2 bg-black/50 text-white text-[10px] px-2 py-0.5 rounded">${escapeHtml(ph.colorName)}</span>
               </div>
             `).join('')}
           </div>
@@ -1038,19 +1052,36 @@
       document.getElementById("productDetailModal").classList.add("hidden");
     }
 
-    function addToCart(item) {
-      const existing = cart.find(i => i.code === item.code && i.colorName === item.colorName);
-      if (existing) { existing.qty += WHOLESALE_STEP; } else { cart.push({ ...item, qty: WHOLESALE_STEP }); }
+    function addToCart(prodId, photoIdx) {
+      const prod = appData.products.find(p => p.id === prodId);
+      if (!prod) return;
+      const ph = (prod.photos || [])[photoIdx];
+      if (!ph) return;
+      const existing = cart.find(i => i.code === prod.code && i.colorName === ph.colorName);
+      if (existing) {
+        existing.qty += WHOLESALE_STEP;
+      } else {
+        cart.push({ id: prod.id, code: prod.code, series: prod.series, colorName: ph.colorName, imageUrl: ph.url, qty: WHOLESALE_STEP });
+      }
       updateCartBadge();
       showToast("Agregados 6 pares al pedido");
     }
 
+    function removeFromCart(idx) {
+      cart.splice(idx, 1);
+      openCartModal();
+      updateCartBadge();
+    }
+
     function updateCartBadge() {
       const totalPairs = cart.reduce((acc, curr) => acc + curr.qty, 0);
+      const series = totalPairs / WHOLESALE_STEP;
       const badge = document.getElementById("headerCartBadge");
       const bottomBadge = document.getElementById("bottomBarBadge");
-      if (badge) { badge.innerText = totalPairs / WHOLESALE_STEP; badge.classList.toggle("hidden", totalPairs === 0); }
-      if (bottomBadge) bottomBadge.innerText = totalPairs / WHOLESALE_STEP;
+      if (badge) { badge.innerText = series; badge.classList.toggle("hidden", totalPairs === 0); }
+      if (bottomBadge) bottomBadge.innerText = series;
+      const totalLabel = document.getElementById("cartTotalSummaryLabel");
+      if (totalLabel) totalLabel.innerText = `${totalPairs} pares (${series} ${series === 1 ? 'serie' : 'series'})`;
     }
 
     function openCartModal() {
@@ -1063,13 +1094,14 @@
           <div class="flex items-center justify-between bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-xs">
             <img src="${sanitizeUrl(item.imageUrl)}" class="w-12 h-12 object-cover rounded-lg" />
             <div class="flex-1 px-3">
-              <span class="font-bold">${item.code} (${item.colorName})</span>
+              <span class="font-bold">${escapeHtml(item.code)} (${escapeHtml(item.colorName)})</span>
               <span class="block text-[11px] text-slate-500">${item.qty} pares</span>
             </div>
-            <button onclick="cart.splice(${idx}, 1); openCartModal(); updateCartBadge();" class="text-red-500 font-bold p-1">✕</button>
+            <button type="button" onclick="removeFromCart(${idx})" class="text-red-500 font-bold p-1">✕</button>
           </div>
         `).join('');
       }
+      updateCartBadge();
       document.getElementById("cartModal").classList.remove("hidden");
     }
 
@@ -1079,11 +1111,19 @@
 
     function sendOrderToWhatsApp(num) {
       if (cart.length === 0) { showToast("Tu pedido está vacío"); return; }
-      const adv = appData.branding.advisors || {};
-      const phone = adv[`adv${num}`] || "51997857379";
-      let msg = "*PEDIDO MAYORISTA*%0A";
-      cart.forEach(i => { msg += `• ${i.code} (${i.colorName}): ${i.qty} pares%0A`; });
-      window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${msg}`, '_blank');
+      const adv = (appData.branding && appData.branding.advisors) || {};
+      const phone = String(adv[`adv${num}`] || "51997857379").replace(/\D/g, '');
+      const name = (document.getElementById("orderClientName").value || '').trim();
+      const city = (document.getElementById("orderClientCity").value || '').trim();
+
+      let msg = "*PEDIDO MAYORISTA*\n";
+      if (name) msg += `Cliente: ${name}\n`;
+      if (city) msg += `Destino: ${city}\n`;
+      cart.forEach(i => { msg += `• ${i.code} (${i.colorName}): ${i.qty} pares\n`; });
+      const total = cart.reduce((a, c) => a + c.qty, 0);
+      msg += `\nTotal: ${total} pares`;
+
+      window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(msg)}`, '_blank');
     }
 
     function openSidebarMenu() { document.getElementById("sidebarMenuModal").classList.remove("hidden"); }
@@ -1109,6 +1149,8 @@
     }
 
     function openAdminAuthModal() {
+      const err = document.getElementById("adminPinErrorText");
+      if (err) err.classList.add("hidden");
       document.getElementById("adminAuthModal").classList.remove("hidden");
       const input = document.getElementById("adminPinInput");
       if (input) { input.value = ''; input.focus(); }
@@ -1118,17 +1160,17 @@
       document.getElementById("adminAuthModal").classList.add("hidden");
     }
 
+    // Solo se compara contra el hash guardado (sin claves escritas en texto plano)
     async function verifyAdminPinSubmit() {
       const input = document.getElementById("adminPinInput");
       const err = document.getElementById("adminPinErrorText");
       const pin = input ? input.value.trim() : "";
-
       if (!pin) return;
 
       const hashed = await sha256(pin);
       const targetHash = (appData.security && appData.security.pinHash) ? appData.security.pinHash : DEFAULT_ALPHANUMERIC_PIN_SHA256;
 
-      if ((hashed === targetHash) || (hashed === DEFAULT_ALPHANUMERIC_PIN_SHA256) || (pin === "Admin2026") || (pin.toLowerCase() === "admin2026")) {
+      if (hashed === targetHash) {
         sessionStorage.setItem('kicks_admin_auth_active', 'true');
         closeAdminAuthModal();
         openAdminPanelModal();
@@ -1163,8 +1205,8 @@
         const btn = document.getElementById(`adminTabBtn-${tab}`);
         if (pane) pane.classList.toggle("hidden", tab !== t);
         if (btn) {
-          btn.className = (tab === t) 
-            ? "px-4 py-3 border-b-2 dynamic-border-primary dynamic-text-primary font-black whitespace-nowrap" 
+          btn.className = (tab === t)
+            ? "px-4 py-3 border-b-2 dynamic-border-primary dynamic-text-primary font-black whitespace-nowrap"
             : "px-4 py-3 border-b-2 border-transparent hover:text-slate-900 whitespace-nowrap";
         }
       });
@@ -1173,20 +1215,20 @@
 
     function populateAdminFields() {
       const b = appData.branding || {};
-      if (document.getElementById("adminLogoUrlInput")) document.getElementById("adminLogoUrlInput").value = b.logoUrl || "";
-      if (document.getElementById("adminPromoNoticeInput")) document.getElementById("adminPromoNoticeInput").value = b.promoNotice || "";
-      if (document.getElementById("adminHeroSlidesInput")) document.getElementById("adminHeroSlidesInput").value = (appData.heroSlides || []).join('\n');
-      if (document.getElementById("adminPhoneInput")) document.getElementById("adminPhoneInput").value = b.phone || "+51997857379";
-      if (document.getElementById("adminHoursInput")) document.getElementById("adminHoursInput").value = b.hours || "Lunes a Sábado: 9:00 am – 8:00 pm";
-      if (document.getElementById("adminLocationInput")) document.getElementById("adminLocationInput").value = b.location || "Lima, Perú — Envíos a todo el país";
+      const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+      set("adminLogoUrlInput", b.logoUrl || "");
+      set("adminPromoNoticeInput", b.promoNotice || "");
+      set("adminHeroSlidesInput", (appData.heroSlides || []).join('\n'));
+      set("adminPhoneInput", b.phone || "+51997857379");
+      set("adminHoursInput", b.hours || "Lunes a Sábado: 9:00 am – 8:00 pm");
+      set("adminLocationInput", b.location || "Lima, Perú — Envíos a todo el país");
 
       const adv = b.advisors || {};
-      if (document.getElementById("adminAdvisor1Phone")) document.getElementById("adminAdvisor1Phone").value = adv.adv1 || "51997857379";
-      if (document.getElementById("adminAdvisor2Phone")) document.getElementById("adminAdvisor2Phone").value = adv.adv2 || "51997857379";
-      if (document.getElementById("adminAdvisor3Phone")) document.getElementById("adminAdvisor3Phone").value = adv.adv3 || "51997857379";
+      set("adminAdvisor1Phone", adv.adv1 || "51997857379");
+      set("adminAdvisor2Phone", adv.adv2 || "51997857379");
+      set("adminAdvisor3Phone", adv.adv3 || "51997857379");
 
-      if (document.getElementById("cloudSupabaseUrl")) document.getElementById("cloudSupabaseUrl").value = SUPABASE_PROJECT_URL;
-      if (document.getElementById("cloudSupabaseKey")) document.getElementById("cloudSupabaseKey").value = SUPABASE_ANON_KEY;
+      set("cloudSupabaseUrl", SUPABASE_PROJECT_URL);
     }
 
     function renderAdminProductsList() {
@@ -1199,13 +1241,13 @@
       container.innerHTML = appData.products.map((p, idx) => `
         <div class="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-2xl text-xs">
           <div class="flex items-center space-x-2">
-            <span class="font-bold text-slate-400">#${idx+1}</span>
-            <span class="font-black text-sm">${p.code}</span>
-            <span class="text-slate-500">(${p.series})</span>
+            <span class="font-bold text-slate-400">#${idx + 1}</span>
+            <span class="font-black text-sm">${escapeHtml(p.code)}</span>
+            <span class="text-slate-500">(${escapeHtml(p.series)})</span>
           </div>
           <div class="flex items-center space-x-1">
-            <button onclick="openProductFormModal('${p.id}')" class="px-3 py-1 bg-slate-900 text-white rounded-lg">Editar</button>
-            <button onclick="deleteProduct('${p.id}')" class="p-1 text-red-500">✕</button>
+            <button type="button" onclick="openProductFormModal('${escapeHtml(p.id)}')" class="px-3 py-1 bg-slate-900 text-white rounded-lg">Editar</button>
+            <button type="button" onclick="deleteProduct('${escapeHtml(p.id)}')" class="p-1 text-red-500">✕</button>
           </div>
         </div>
       `).join('');
@@ -1222,10 +1264,8 @@
     function openProductFormModal(prodId = null) {
       const modal = document.getElementById("productFormModal");
       const title = document.getElementById("productFormModalTitle");
-      const formId = document.getElementById("editFormProdId");
-      const code = document.getElementById("editFormCode");
-      const series = document.getElementById("editFormSeries");
       const photosBox = document.getElementById("formPhotosContainer");
+      const $ = id => document.getElementById(id);
 
       photosBox.innerHTML = "";
 
@@ -1233,15 +1273,23 @@
         const prod = appData.products.find(p => p.id === prodId);
         if (!prod) return;
         title.innerText = `Editar ${prod.code}`;
-        formId.value = prod.id;
-        code.value = prod.code;
-        series.value = prod.series;
+        $("editFormProdId").value = prod.id;
+        $("editFormCode").value = prod.code || "";
+        $("editFormSeries").value = prod.series || "";
+        $("editFormStyle").value = prod.style || "Deportivo";
+        $("editFormName").value = prod.name || "";
+        $("editFormSeparatorBanner").value = prod.separatorBanner || "";
+        $("editFormDesc").value = prod.description || "";
         (prod.photos || []).forEach(ph => addPhotoRowToForm(ph.url, ph.colorName));
       } else {
         title.innerText = "Registrar Nuevo Código";
-        formId.value = "";
-        code.value = "";
-        series.value = "22-27";
+        $("editFormProdId").value = "";
+        $("editFormCode").value = "";
+        $("editFormSeries").value = "22-27";
+        $("editFormStyle").value = "Deportivo";
+        $("editFormName").value = "";
+        $("editFormSeparatorBanner").value = "";
+        $("editFormDesc").value = "";
         addPhotoRowToForm();
       }
       modal.classList.remove("hidden");
@@ -1254,8 +1302,8 @@
       const div = document.createElement("div");
       div.className = "flex items-center space-x-2 bg-slate-50 p-2 rounded-xl border border-slate-200 text-xs";
       div.innerHTML = `
-        <input type="url" placeholder="URL Foto" value="${url}" class="form-photo-url flex-1 border rounded-lg p-1.5 font-mono text-[11px]" />
-        <input type="text" placeholder="Color" value="${color}" class="form-photo-color w-24 border rounded-lg p-1.5 font-bold" />
+        <input type="url" placeholder="URL Foto" value="${escapeHtml(url)}" class="form-photo-url flex-1 border rounded-lg p-1.5 font-mono text-[11px]" />
+        <input type="text" placeholder="Color" value="${escapeHtml(color)}" class="form-photo-color w-24 border rounded-lg p-1.5 font-bold" />
         <button type="button" onclick="this.parentElement.remove()" class="text-red-500 font-bold px-1.5">✕</button>
       `;
       container.appendChild(div);
@@ -1295,14 +1343,13 @@
       closeProductFormModal();
       renderAdminProductsList();
       renderCatalogSections();
-      showToast("Modelo guardado");
     }
 
     function exportDataJson() {
       const blob = new Blob([JSON.stringify(appData, null, 2)], { type: "application/json" });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = `catalogo_${new Date().toISOString().slice(0,10)}.json`;
+      a.download = `catalogo_${new Date().toISOString().slice(0, 10)}.json`;
       a.click();
     }
 
@@ -1310,14 +1357,17 @@
       const file = e.target.files[0];
       if (!file) return;
       const reader = new FileReader();
-      reader.onload = function(evt) {
+      reader.onload = function (evt) {
         try {
           const parsed = JSON.parse(evt.target.result);
           if (parsed && Array.isArray(parsed.products)) {
-            appData = parsed;
+            appData = { ...appData, ...parsed };
+            if (!appData.security || !appData.security.pinHash) appData.security = { pinHash: DEFAULT_ALPHANUMERIC_PIN_SHA256 };
             saveAllToStorage();
             renderAll();
             showToast("Catálogo restaurado");
+          } else {
+            alert("El archivo no tiene el formato esperado");
           }
         } catch (_) { alert("Archivo inválido"); }
       };
@@ -1335,14 +1385,15 @@
       if (!appData.security) appData.security = {};
       appData.security.pinHash = hash;
 
-      saveAllToStorage();
+      // El PIN solo se guarda en este navegador (no se sube a la nube)
+      try { localStorage.setItem(LOCAL_KEY, JSON.stringify(appData)); } catch (_) {}
       document.getElementById("newAdminPinInput").value = "";
       document.getElementById("confirmAdminPinInput").value = "";
-      showToast("¡Clave actualizada!");
+      showToast("¡Clave actualizada en este navegador!");
     }
 
     function escapeHtml(str) {
-      if (!str) return '';
+      if (str === null || str === undefined) return '';
       return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
     }
 
@@ -1371,8 +1422,8 @@
       }, 2300);
     }
 
-    // INICIO FORZADO ASEGURANDO CONEXIÓN REMOTA INMEDIATA
-    window.onload = async function() {
+    window.onload = async function () {
+      loadLocalBackup(true); // solo recuerda el PIN guardado en este navegador
       applyCurrentPaletteCss();
       renderAll();
       heroIntervalTimer = setInterval(() => nextHeroSlide(), 3000);
@@ -1387,6 +1438,11 @@
         }
       });
       await syncFromCloud();
+      // Si la nube falló, mostrar al menos la copia local de este navegador
+      if (!cloudLoadedOk && appData.products.length === 0) {
+        loadLocalBackup(false);
+        renderAll();
+      }
     };
   </script>
 </body>
