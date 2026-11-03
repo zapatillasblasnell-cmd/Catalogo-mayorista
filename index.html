@@ -751,25 +751,29 @@
     let pinLockoutUntil = 0;
 
     // SUPABASE SYNC
-    function getSupabaseHeaders() {
+    function getSupabaseKey() {
       const cloud = appData.cloud || {};
-      const key = cloud.key || localStorage.getItem('sb_anon_key') || '';
-      return {
-        'apikey': key,
-        'Authorization': `Bearer ${key}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=representation'
-      };
+      return (cloud.key && cloud.key.trim().length > 10) ? cloud.key.trim() : DEFAULT_SUPABASE_CONFIG.key;
     }
 
     function getSupabaseUrl() {
       const cloud = appData.cloud || {};
-      return (cloud.url && cloud.url.startsWith('http')) ? cloud.url.replace(/\/$/, '') : DEFAULT_SUPABASE_CONFIG.url;
+      const url = (cloud.url && cloud.url.startsWith('http')) ? cloud.url.trim() : DEFAULT_SUPABASE_CONFIG.url;
+      return url.replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
     }
 
-  async function syncFromCloud() {
-      const supaUrl = "https://mgbwhsrjcdotsborsgbkowm.supabase.co";
-      const key = DEFAULT_SUPABASE_CONFIG.key || localStorage.getItem('sb_anon_key') || "";
+    function getSupabaseHeaders() {
+      const key = getSupabaseKey();
+      return {
+        'apikey': key,
+        'Authorization': `Bearer ${key}`,
+        'Content-Type': 'application/json'
+      };
+    }
+
+    async function syncFromCloud() {
+      const supaUrl = getSupabaseUrl();
+      const key = getSupabaseKey();
       if (!supaUrl || !key) {
         updateCloudStatusUI('offline');
         return;
@@ -778,6 +782,7 @@
       try {
         const res = await fetch(`${supaUrl}/rest/v1/store_state?select=*`, {
           method: 'GET',
+          cache: 'no-store',
           headers: {
             'apikey': key,
             'Authorization': `Bearer ${key}`
@@ -806,22 +811,21 @@
             }
           }
         } else {
-          console.warn("Respuesta no satisfactoria de Supabase:", res.status);
           updateCloudStatusUI('offline');
         }
       } catch (err) {
-        console.debug("Modo local activo:", err);
         updateCloudStatusUI('offline');
       }
     }
 
     async function syncToCloud() {
       const supaUrl = getSupabaseUrl();
-      const headers = getSupabaseHeaders();
-      if (!supaUrl || !headers.apikey) return;
+      const key = getSupabaseKey();
+      if (!supaUrl || !key) return;
 
       updateCloudStatusUI('saving');
       const payload = {
+        id: 'main',
         catalog: appData.products || [],
         config: {
           branding: appData.branding || {},
@@ -832,9 +836,14 @@
       };
 
       try {
-        const res = await fetch(`${supaUrl}/rest/v1/store_state?id=eq.main`, {
-          method: 'PATCH',
-          headers: headers,
+        const res = await fetch(`${supaUrl}/rest/v1/store_state`, {
+          method: 'POST',
+          headers: {
+            'apikey': key,
+            'Authorization': `Bearer ${key}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'resolution=merge-duplicates,return=representation'
+          },
           body: JSON.stringify(payload)
         });
 
@@ -842,13 +851,7 @@
           updateCloudStatusUI('saved');
           showToast("☁️ ¡Actualizado en la nube para todos!");
         } else {
-          await fetch(`${supaUrl}/rest/v1/store_state`, {
-            method: 'POST',
-            headers: headers,
-            body: JSON.stringify({ id: 'main', ...payload })
-          });
-          updateCloudStatusUI('saved');
-          showToast("☁️ ¡Tienda sincronizada en la nube!");
+          updateCloudStatusUI('offline');
         }
       } catch (err) {
         updateCloudStatusUI('offline');
@@ -871,7 +874,7 @@
     }
 
     function saveCloudCredentials() {
-      const urlInput = document.getElementById("cloudSupabaseUrl").value.trim();
+      const urlInput = document.getElementById("cloudSupabaseUrl").value.trim().replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
       const keyInput = document.getElementById("cloudSupabaseKey").value.trim();
 
       if (!appData.cloud) appData.cloud = {};
