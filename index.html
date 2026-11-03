@@ -328,7 +328,7 @@
           id="adminPinInput" 
           maxlength="32" 
           placeholder="Clave..." 
-          class="w-full text-center text-lg font-mono tracking-wider border border-slate-300 rounded-2xl py-3 px-4 outline-none bg-slate-50/50"
+          class="w-full text-center text-lg font-mono tracking-wider border border-slate-300 rounded-2xl py-3 px-4 outline-none bg-slate-50/50" 
           onkeydown="if(event.key==='Enter') verifyAdminPinSubmit()"
         />
         <div id="adminPinErrorText" class="text-xs font-bold text-red-600 hidden text-center">Contraseña incorrecta.</div>
@@ -627,10 +627,10 @@
     Mensaje
   </div>
 
-  <!-- JAVASCRIPT LOGIC -->
+  <!-- JAVASCRIPT CORREGIDO Y BLINDADO -->
   <script>
     const WHOLESALE_STEP = 6;
-    const DEFAULT_ALPHANUMERIC_PIN_SHA256 = "b7a840938f6b21656b8eef2fcf452f41c9ee0ff36efd927d6052fb58f62506bc";
+    const DEFAULT_ALPHANUMERIC_PIN_SHA256 = "b7a840938f6b21656b8eef2fcf452f41c9ee0ff36efd927d6052fb58f62506bc"; // Hash de Admin2026
 
     const DEFAULT_SUPABASE_CONFIG = {
       url: "https://mgbwhsrjcdotsborsgbkowm.supabase.co",
@@ -663,16 +663,21 @@
     let logoSecretTimer = null;
 
     function getSupabaseKey() {
+      const storedKey = localStorage.getItem('sb_anon_key');
+      if (storedKey && storedKey.trim().length > 10) return storedKey.trim();
       const cloud = appData.cloud || {};
       return (cloud.key && cloud.key.trim().length > 10) ? cloud.key.trim() : DEFAULT_SUPABASE_CONFIG.key;
     }
 
     function getSupabaseUrl() {
+      const storedUrl = localStorage.getItem('sb_project_url');
+      if (storedUrl && storedUrl.startsWith('http')) return storedUrl.trim().replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
       const cloud = appData.cloud || {};
       const url = (cloud.url && cloud.url.startsWith('http')) ? cloud.url.trim() : DEFAULT_SUPABASE_CONFIG.url;
       return url.replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
     }
 
+    // SINCRONIZACIÓN DESDE LA NUBE BLINDADA
     async function syncFromCloud() {
       const supaUrl = getSupabaseUrl();
       const key = getSupabaseKey();
@@ -710,17 +715,24 @@
               localStorage.setItem('kicks_mayorista_store_v2', JSON.stringify(appData));
               applyCurrentPaletteCss();
               renderAll();
-              updateCloudStatusUI('saved');
             }
+            updateCloudStatusUI('saved');
+          } else {
+            // Fila inicial no encontrada, sincronizar estado local hacia la nube
+            syncToCloud();
           }
         } else {
+          const errDetail = await res.text();
+          console.warn("Supabase GET falló:", res.status, errDetail);
           updateCloudStatusUI('offline');
         }
       } catch (err) {
+        console.error("Fallo de red conectando a Supabase:", err);
         updateCloudStatusUI('offline');
       }
     }
 
+    // ENVÍO INMEDIATO A LA NUBE (UPSERT BLINDADO CON ON_CONFLICT)
     async function syncToCloud() {
       const supaUrl = getSupabaseUrl();
       const key = getSupabaseKey();
@@ -754,9 +766,13 @@
           updateCloudStatusUI('saved');
           showToast("☁️ ¡Actualizado en la nube para todos!");
         } else {
+          const errDetail = await res.text();
+          console.error("Error al guardar en Supabase:", res.status, errDetail);
           updateCloudStatusUI('offline');
+          showToast("⚠️ Revisa permisos de Supabase (RLS)");
         }
       } catch (err) {
+        console.error("Error de conexión:", err);
         updateCloudStatusUI('offline');
       }
     }
@@ -766,16 +782,17 @@
       if (!el) return;
       if (status === 'saving') {
         el.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-spin"></span><span>Guardando en la nube…</span>`;
-        el.className = "text-[10px] text-amber-400 font-bold block";
+        el.className = "text-[10px] text-amber-400 font-bold block flex items-center space-x-1";
       } else if (status === 'saved') {
         el.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span><span>● Conectado a la Nube (Supabase)</span>`;
-        el.className = "text-[10px] text-emerald-400 font-bold block";
+        el.className = "text-[10px] text-emerald-400 font-bold block flex items-center space-x-1";
       } else {
         el.innerHTML = `<span>○ Modo Local (Revisa la clave)</span>`;
         el.className = "text-[10px] text-slate-400 font-bold block";
       }
     }
 
+    // GUARDAR PALETA DE COLORES
     function saveAdminPaletteSettings() {
       const primEl = document.getElementById("palettePrimaryCode") || document.getElementById("palettePrimaryColor");
       const hovEl = document.getElementById("paletteHoverCode") || document.getElementById("paletteHoverColor");
@@ -891,8 +908,10 @@
 
       saveAllToStorage();
       showToast("Conexión de nube guardada");
+      syncFromCloud();
     }
 
+    // RENDERIZADO GENERAL
     function renderAll() {
       applyCurrentPaletteCss();
       renderBranding();
@@ -1043,7 +1062,7 @@
             </div>
           </div>
           <div class="grid grid-cols-2 gap-2">
-            ${(prod.photos || []).map((ph, idx) => `
+            ${(prod.photos || []).map((ph) => `
               <div class="relative aspect-[4/5] rounded-xl overflow-hidden bg-slate-100">
                 <img src="${sanitizeUrl(ph.url)}" class="w-full h-full object-cover" />
                 <button type="button" onclick="addToCart({ id: '${prod.id}', code: '${prod.code}', series: '${prod.series}', colorName: '${ph.colorName}', imageUrl: '${ph.url}' });" class="absolute bottom-2 right-2 dynamic-bg-primary text-white text-[11px] font-black px-2.5 py-1.5 rounded-lg shadow">+6 pares</button>
@@ -1384,7 +1403,7 @@
     }
 
     function escapeHtml(str) {
-      if (str === null || str === undefined) return '';
+      if (!str) return '';
       return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
     }
 
