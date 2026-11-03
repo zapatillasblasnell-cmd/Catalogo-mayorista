@@ -627,10 +627,10 @@
     Mensaje
   </div>
 
-  <!-- JAVASCRIPT LOGIC DIRECTA Y ROBUSTA -->
+  <!-- JAVASCRIPT LOGIC -->
   <script>
     const WHOLESALE_STEP = 6;
-    const DEFAULT_ALPHANUMERIC_PIN_SHA256 = "b7a840938f6b21656b8eef2fcf452f41c9ee0ff36efd927d6052fb58f62506bc"; // Hash de Admin2026
+    const DEFAULT_ALPHANUMERIC_PIN_SHA256 = "b7a840938f6b21656b8eef2fcf452f41c9ee0ff36efd927d6052fb58f62506bc";
 
     const DEFAULT_SUPABASE_CONFIG = {
       url: "https://mgbwhsrjcdotsborsgbkowm.supabase.co",
@@ -673,7 +673,6 @@
       return url.replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
     }
 
-    // SINCRONIZACIÓN DESDE LA NUBE
     async function syncFromCloud() {
       const supaUrl = getSupabaseUrl();
       const key = getSupabaseKey();
@@ -683,7 +682,7 @@
       }
 
       try {
-        const res = await fetch(`${supaUrl}/rest/v1/store_state?select=*`, {
+        const res = await fetch(`${supaUrl}/rest/v1/store_state?id=eq.main&select=*`, {
           method: 'GET',
           cache: 'no-store',
           headers: {
@@ -722,7 +721,6 @@
       }
     }
 
-    // ENVÍO INMEDIATO A LA NUBE (UPSERT DIRECTO)
     async function syncToCloud() {
       const supaUrl = getSupabaseUrl();
       const key = getSupabaseKey();
@@ -741,7 +739,7 @@
       };
 
       try {
-        const res = await fetch(`${supaUrl}/rest/v1/store_state`, {
+        const res = await fetch(`${supaUrl}/rest/v1/store_state?on_conflict=id`, {
           method: 'POST',
           headers: {
             'apikey': key,
@@ -778,7 +776,6 @@
       }
     }
 
-    // GUARDAR PALETA DE COLORES
     function saveAdminPaletteSettings() {
       const primEl = document.getElementById("palettePrimaryCode") || document.getElementById("palettePrimaryColor");
       const hovEl = document.getElementById("paletteHoverCode") || document.getElementById("paletteHoverColor");
@@ -896,7 +893,6 @@
       showToast("Conexión de nube guardada");
     }
 
-    // RENDERIZADO GENERAL
     function renderAll() {
       applyCurrentPaletteCss();
       renderBranding();
@@ -1388,7 +1384,7 @@
     }
 
     function escapeHtml(str) {
-      if (!str) return '';
+      if (str === null || str === undefined) return '';
       return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
     }
 
