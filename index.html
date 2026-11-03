@@ -62,6 +62,7 @@
       font-family: 'Inter', sans-serif;
       -webkit-tap-highlight-color: transparent;
       user-select: none;
+      background-color: #f1f5f9;
     }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -627,10 +628,10 @@
     Mensaje
   </div>
 
-  <!-- JAVASCRIPT CORREGIDO Y BLINDADO -->
+  <!-- JAVASCRIPT LOGIC -->
   <script>
     const WHOLESALE_STEP = 6;
-    const DEFAULT_ALPHANUMERIC_PIN_SHA256 = "b7a840938f6b21656b8eef2fcf452f41c9ee0ff36efd927d6052fb58f62506bc"; // Hash de Admin2026
+    const DEFAULT_ALPHANUMERIC_PIN_SHA256 = "b7a840938f6b21656b8eef2fcf452f41c9ee0ff36efd927d6052fb58f62506bc";
 
     const DEFAULT_SUPABASE_CONFIG = {
       url: "https://mgbwhsrjcdotsborsgbkowm.supabase.co",
@@ -677,7 +678,7 @@
       return url.replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
     }
 
-    // SINCRONIZACIÓN DESDE LA NUBE BLINDADA
+    // SINCRONIZACIÓN DESDE LA NUBE DIREKTA KEN UNIVERSAL
     async function syncFromCloud() {
       const supaUrl = getSupabaseUrl();
       const key = getSupabaseKey();
@@ -687,7 +688,7 @@
       }
 
       try {
-        const res = await fetch(`${supaUrl}/rest/v1/store_state?id=eq.main&select=*`, {
+        const res = await fetch(`${supaUrl}/rest/v1/store_state?select=*`, {
           method: 'GET',
           cache: 'no-store',
           headers: {
@@ -699,8 +700,9 @@
         if (res.ok) {
           const rows = await res.json();
           if (rows && rows.length > 0) {
-            const remote = rows[0];
+            const remote = rows.find(r => r.id === 'main') || rows[0];
             let hasChanges = false;
+
             if (remote.catalog && Array.isArray(remote.catalog)) {
               appData.products = remote.catalog;
               hasChanges = true;
@@ -718,12 +720,9 @@
             }
             updateCloudStatusUI('saved');
           } else {
-            // Fila inicial no encontrada, sincronizar estado local hacia la nube
             syncToCloud();
           }
         } else {
-          const errDetail = await res.text();
-          console.warn("Supabase GET falló:", res.status, errDetail);
           updateCloudStatusUI('offline');
         }
       } catch (err) {
@@ -766,10 +765,7 @@
           updateCloudStatusUI('saved');
           showToast("☁️ ¡Actualizado en la nube para todos!");
         } else {
-          const errDetail = await res.text();
-          console.error("Error al guardar en Supabase:", res.status, errDetail);
           updateCloudStatusUI('offline');
-          showToast("⚠️ Revisa permisos de Supabase (RLS)");
         }
       } catch (err) {
         console.error("Error de conexión:", err);
