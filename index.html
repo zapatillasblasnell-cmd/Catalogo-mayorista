@@ -331,7 +331,6 @@
 const WHOLESALE_STEP = 6;
 const LOCAL_KEY = 'kicks_mayorista_store_v2';
 const SESSION_KEY = 'kicks_admin_auth_active';
-// Hash SHA-256 de la clave inicial "Admin2026" (no hay claves en texto plano)
 const DEFAULT_PIN_HASH = "059a50ce956b7ec61527c7ecc0c55b5a009dc54ab4acddce8852b46baa2aba30";
 const SUPABASE_PROJECT_URL = "https://mgbwhsrjcborsggbkowm.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_gy0IrWGFyjlIsHQtD4qCyA_eQLqQMon";
@@ -412,7 +411,6 @@ function deepBranding(b){
   const d=appData.branding;
   return {...d,...b,social:{...d.social,...(b.social||{})},advisors:{...d.advisors,...(b.advisors||{})}};
 }
-// LECTURA: nunca sube nada automáticamente
 async function syncFromCloud(){
   try{
     const res=await fetch(`${SUPABASE_PROJECT_URL}/rest/v1/store_state?id=eq.main&select=*`,{method:'GET',cache:'no-store',headers:sbHeaders()});
@@ -433,7 +431,6 @@ async function syncFromCloud(){
     updateCloudStatusUI('saved'); renderAll();
   }catch(e){ console.error(e); setCloudDiag("❌ No se pudo conectar con Supabase."); updateCloudStatusUI('error'); }
 }
-// ESCRITURA: solo desde acciones del administrador
 async function syncToCloud(){
   updateCloudStatusUI('saving');
   const payload={id:'main',catalog:appData.products||[],
@@ -527,22 +524,22 @@ function resetAllCatalogFilters(){ selSeries="Todas"; selStyle="Todos"; renderFi
 
 /* ================= CATÁLOGO ================= */
 const LAYOUTS={1:[1],2:[2],3:[1,2],4:[1,2,1],5:[1,2,2],6:[1,2,1,2],7:[1,4,2],8:[1,4,3]};
-function photoCard(prod,ph,idx,aspect){
+function photoCard(prod,ph,idx){
   const hex=isHex(ph.colorHex)?ph.colorHex:'#ffffff';
-  return `<div class="relative w-full ${aspect} overflow-hidden rounded-xl bg-slate-100 group">
-    <img id="photo-${escapeHtml(prod.id)}-${idx}" src="${sanitizeUrl(ph.url)}" alt="${escapeHtml(prod.code)} - ${escapeHtml(ph.colorName)}" loading="lazy" onclick="openProductDetailModal('${escapeHtml(prod.id)}')" class="w-full h-full object-cover cursor-pointer transition-transform duration-300 group-hover:scale-105">
+  return `<div class="relative w-full overflow-hidden rounded-xl bg-slate-100 group flex items-center justify-center">
+    <img id="photo-${escapeHtml(prod.id)}-${idx}" src="${sanitizeUrl(ph.url)}" alt="${escapeHtml(prod.code)} - ${escapeHtml(ph.colorName)}" loading="lazy" onclick="openProductDetailModal('${escapeHtml(prod.id)}')" class="w-full h-auto object-contain cursor-pointer transition-transform duration-300 group-hover:scale-105">
     <div class="absolute top-2 left-2 bg-black/25 backdrop-blur-sm text-white/80 px-2 py-0.5 rounded-md text-[9px] md:text-xs font-semibold flex items-center space-x-1 pointer-events-none"><span class="w-1.5 h-1.5 rounded-full" style="background-color:${hex}"></span><span>${escapeHtml(ph.colorName||'Color')}</span></div>
     <button type="button" onclick="addToCart('${escapeHtml(prod.id)}',${idx})" class="absolute bottom-2.5 right-2.5 dynamic-bg-primary hover:opacity-90 active:scale-95 text-white text-[11px] md:text-xs font-black px-2.5 md:px-3.5 py-1.5 md:py-2 rounded-xl shadow-md flex items-center space-x-1.5 transition z-10" title="Agregar 1 serie (6 pares)"><i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i><span>+6 pares</span></button></div>`;
 }
 function photoGrid(prod){
   const photos=(prod.photos||[]).slice(0,8), n=photos.length;
   if(!n) return `<div class="p-6 text-center text-xs text-slate-400">Sin fotos cargadas para este código.</div>`;
-  if(n===1) return `<div class="w-full max-w-md mx-auto">${photoCard(prod,photos[0],0,"aspect-[4/5]")}</div>`;
+  if(n===1) return `<div class="w-full max-w-md mx-auto">${photoCard(prod,photos[0],0)}</div>`;
   let i=0;
   return `<div class="space-y-2">`+LAYOUTS[n].map(cols=>{
-    const items=[]; for(let k=0;k<cols;k++,i++) items.push(photoCard(prod,photos[i],i,cols===1?"aspect-[4/5] md:aspect-[16/9]":"aspect-[4/5]"));
+    const items=[]; for(let k=0;k<cols;k++,i++) items.push(photoCard(prod,photos[i],i));
     const cls=cols===1?"grid-cols-1":cols===2?"grid-cols-2":cols===3?"grid-cols-2 md:grid-cols-3":"grid-cols-2 md:grid-cols-4";
-    return `<div class="grid ${cls} gap-2">${items.join('')}</div>`;
+    return `<div class="grid ${cls} gap-2 items-start">${items.join('')}</div>`;
   }).join('')+`</div>`;
 }
 function renderCatalog(){
@@ -588,8 +585,8 @@ function openProductDetailModal(id){
   const banner=sanitizeUrl(p.separatorBanner);
   const photos=(p.photos||[]).map((ph,i)=>{
     const hex=isHex(ph.colorHex)?ph.colorHex:'#ffffff';
-    return `<div class="relative w-full aspect-[4/5] overflow-hidden shadow-sm bg-slate-100 rounded-2xl">
-      <img id="detail-${escapeHtml(p.id)}-${i}" src="${sanitizeUrl(ph.url)}" alt="${escapeHtml(p.code)}" class="w-full h-full object-cover">
+    return `<div class="relative w-full overflow-hidden shadow-sm bg-slate-100 rounded-2xl flex items-center justify-center">
+      <img id="detail-${escapeHtml(p.id)}-${i}" src="${sanitizeUrl(ph.url)}" alt="${escapeHtml(p.code)}" class="w-full h-auto object-contain">
       <div class="absolute top-3 left-3 bg-black/40 backdrop-blur-sm text-white px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center space-x-1.5"><span class="w-2 h-2 rounded-full" style="background-color:${hex}"></span><span>${escapeHtml(ph.colorName||'Color')}</span></div>
       <button type="button" onclick="addToCart('${escapeHtml(p.id)}',${i},'detail-${escapeHtml(p.id)}-${i}')" class="absolute bottom-3 right-3 dynamic-bg-primary hover:opacity-90 text-white px-3.5 py-2.5 rounded-xl shadow-lg active:scale-95 transition flex items-center space-x-1.5 font-black text-xs"><i data-lucide="shopping-cart" class="w-4 h-4"></i><span>Agregar + 6 pares</span></button></div>`;
   }).join('');
@@ -600,7 +597,7 @@ function openProductDetailModal(id){
         <span class="text-2xl md:text-3xl font-black">${escapeHtml(p.code)}</span>
         <span class="text-xs md:text-sm font-bold text-white/90">Serie: ${escapeHtml(p.series)} • Estilo: ${escapeHtml(p.style)}</span>
         <p class="text-[11px] md:text-xs text-white/80 mt-1 max-w-md leading-relaxed">${escapeHtml(p.description||'')}</p></div></div>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 px-3 md:px-6 pt-2">${photos}</div>`;
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 px-3 md:px-6 pt-2 items-start">${photos}</div>`;
   pushModalState('detail');
   $("productDetailModal").classList.remove("hidden"); icons();
 }
@@ -828,7 +825,7 @@ function addPhotoRowToForm(url="",color="",hex="#e11d48"){
   if(box.children.length>=8){ showToast("Máximo 8 fotos por código"); return; }
   const d=document.createElement("div");
   d.className="flex items-center space-x-2 bg-slate-50 p-2 rounded-xl border border-slate-200";
-  d.innerHTML=`<input type="url" placeholder="URL Foto 4:5" value="${escapeHtml(url)}" class="form-photo-url flex-1 min-w-0 border rounded-lg p-1.5 font-mono text-[11px]">
+  d.innerHTML=`<input type="url" placeholder="URL Foto" value="${escapeHtml(url)}" class="form-photo-url flex-1 min-w-0 border rounded-lg p-1.5 font-mono text-[11px]">
     <input type="text" placeholder="Color" value="${escapeHtml(color)}" maxlength="30" class="form-photo-color w-24 border rounded-lg p-1.5 font-bold">
     <input type="color" value="${isHex(hex)?hex:'#e11d48'}" class="form-photo-hex w-8 h-8 rounded-lg cursor-pointer border">
     <button type="button" onclick="this.parentElement.remove()" class="text-red-500 font-bold px-1.5">✕</button>`;
@@ -883,13 +880,13 @@ window.onload=async function(){
     }
   }catch(_){}
   buildAdminStatic();
-  loadLocalBackup(true);           // solo recuerda el PIN de este navegador
+  loadLocalBackup(true);
   try{ history.replaceState({page:'root'},'',null); }catch(_){}
   renderAll(); startHeroTimer();
   try{ if(new URLSearchParams(location.search).get('admin')==='1') requestAdminAccess(); }catch(_){}
   window.addEventListener('keydown',e=>{ if((e.ctrlKey||e.metaKey)&&e.shiftKey&&(e.key==='A'||e.key==='a')){ e.preventDefault(); requestAdminAccess(); } });
   await syncFromCloud();
-  if(!cloudLoadedOk&&appData.products.length===0){ loadLocalBackup(false); renderAll(); }   // respaldo si la nube falla
+  if(!cloudLoadedOk&&appData.products.length===0){ loadLocalBackup(false); renderAll(); }
 };
 </script>
 </body>
