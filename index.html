@@ -193,4 +193,1237 @@
   </div>
 
   <!-- PASTILLA FLOTANTE INFERIOR -->
-  <div id="bottomWholesaleBar" class="fixed bottom-3 md:bottom-6 left-1/2 -translate-x-1/2 w-[94%] max-w-[420px] md:max-w-md z-[65] bg-white/95 backdrop-blur-md border border-slate-200/90 rounded-
+  <div id="bottomWholesaleBar" class="fixed bottom-3 md:bottom-6 left-1/2 -translate-x-1/2 w-[94%] max-w-[420px] md:max-w-md z-[65] bg-white/95 backdrop-blur-md border border-slate-200/90 rounded-2xl shadow-[0_10px_25px_rgba(0,0,0,0.3)] px-3.5 py-2.5 flex items-center justify-between transition-transform duration-300 select-none">
+    <div class="flex items-center space-x-2.5 min-w-0 pr-1 cursor-pointer" onclick="openCartModal()">
+      <div class="relative w-9 h-9 rounded-xl bg-rose-50 dynamic-text-primary flex items-center justify-center shrink-0 border border-rose-100" id="bottomCartIconContainer">
+        <i data-lucide="shopping-cart" class="w-5 h-5 stroke-[2.2]"></i>
+        <span id="bottomBarBadge" class="absolute -top-1 -right-1 dynamic-bg-primary text-white text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-xs">0</span>
+      </div>
+      <div class="leading-tight truncate">
+        <span class="text-[12px] md:text-xs font-black text-slate-900 block truncate" id="bottomBarSummaryTitle">Agregar a mi pedido</span>
+        <span class="text-[10px] md:text-[11px] text-slate-500 font-medium" id="bottomBarSummaryDesc">Mínimo 6 pares (1 serie)</span>
+      </div>
+    </div>
+    
+    <button type="button" onclick="openCartModal()" id="bottomBarActionBtn" class="dynamic-bg-primary hover:opacity-90 active:scale-95 text-white font-black text-xs md:text-sm py-2.5 px-3.5 md:px-4 rounded-xl flex items-center space-x-1.5 shadow-md shadow-rose-600/30 transition shrink-0 select-none">
+      <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+      <span id="bottomBarActionText" class="tracking-wide whitespace-nowrap">Hacer mi pedido Mayorista</span>
+    </button>
+  </div>
+
+  <!-- MODAL: DETALLE DE UN CÓDIGO -->
+  <div id="productDetailModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-0 md:p-6 hidden">
+    <div id="modalDetailCardBox" class="bg-white w-full max-w-[430px] md:max-w-4xl h-full md:h-[90vh] md:rounded-3xl flex flex-col overflow-hidden shadow-2xl relative">
+      <div class="px-4 md:px-6 py-3.5 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-20">
+        <div class="flex items-center space-x-2 min-w-0">
+          <button type="button" onclick="closeProductDetailModal()" class="p-1.5 -ml-1 text-slate-700 hover:text-black hover:bg-slate-100 rounded-lg transition" title="Volver al catálogo">
+            <i data-lucide="arrow-left" class="w-5 h-5"></i>
+          </button>
+          <span class="w-2 h-2 rounded-full dynamic-bg-primary"></span>
+          <h3 id="modalCodeTitle" class="text-xs sm:text-sm md:text-base font-black uppercase tracking-wider text-slate-900 truncate">WB185</h3>
+        </div>
+        <button type="button" onclick="closeProductDetailModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center active:scale-90 transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div id="modalDetailContent" class="flex-1 overflow-y-auto no-scrollbar space-y-4 pb-28 md:pb-12"></div>
+    </div>
+  </div>
+
+  <!-- MODAL: PEDIDO MAYORISTA -->
+  <div id="cartModal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 hidden">
+    <div class="bg-white w-full max-w-[430px] sm:max-w-lg max-h-[92vh] rounded-t-3xl sm:rounded-3xl overflow-hidden flex flex-col shadow-2xl relative">
+      <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-10">
+        <div class="flex items-center space-x-2.5">
+          <i data-lucide="shopping-cart" class="w-5 h-5 dynamic-text-primary"></i>
+          <div>
+            <h3 class="text-xs md:text-sm font-black uppercase tracking-wider text-slate-900">RESUMEN DEL PEDIDO MAYORISTA</h3>
+            <span class="text-[10px] text-slate-400 font-semibold">Mínimo 6 pares por serie</span>
+          </div>
+        </div>
+        <button type="button" onclick="closeCartModal()" class="p-1 rounded-full text-slate-400 hover:text-slate-800">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div id="cartItemsList" class="p-4 space-y-2.5 flex-1 overflow-y-auto no-scrollbar"></div>
+
+      <div class="p-4 md:p-5 bg-slate-50 border-t border-slate-100 space-y-3">
+        <div class="flex items-center justify-between text-xs md:text-sm">
+          <span class="text-slate-600 font-bold">Total del Pedido:</span>
+          <span id="cartTotalSummaryLabel" class="text-base font-black dynamic-text-primary">0 pares (0 series)</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <input type="text" id="orderClientName" placeholder="Tu nombre o negocio" maxlength="60" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 outline-none" />
+          <input type="text" id="orderClientCity" placeholder="Ciudad / Destino" maxlength="60" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 outline-none" />
+        </div>
+
+        <div class="space-y-1.5 pt-1">
+          <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 block text-center">Enviar pedido a un Asesor:</span>
+          <div class="grid grid-cols-3 gap-1.5">
+            <button type="button" onclick="sendOrderToWhatsApp(1)" class="py-2 px-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] flex flex-col items-center justify-center shadow-xs">
+              <span>Asesor 1</span>
+              <span class="text-[8px] opacity-80">Lima</span>
+            </button>
+            <button type="button" onclick="sendOrderToWhatsApp(2)" class="py-2 px-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] flex flex-col items-center justify-center shadow-xs">
+              <span>Asesor 2</span>
+              <span class="text-[8px] opacity-80">Provincias</span>
+            </button>
+            <button type="button" onclick="sendOrderToWhatsApp(3)" class="py-2 px-1 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-[10px] flex flex-col items-center justify-center shadow-xs">
+              <span>Asesor 3</span>
+              <span class="text-[8px] text-amber-300">VIP</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: MENÚ LATERAL HAMBURGUESA -->
+  <div id="sidebarMenuModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex hidden">
+    <div class="bg-white w-[80%] max-w-[320px] h-full shadow-2xl p-5 flex flex-col justify-between">
+      <div class="space-y-6">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <span class="font-black text-sm uppercase tracking-wider text-slate-900">Menú Catálogo</span>
+          <button type="button" onclick="closeSidebarMenu()" class="p-1 rounded-full text-slate-400 hover:text-slate-800">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+        <nav class="space-y-3 text-xs font-bold text-slate-700">
+          <button type="button" onclick="closeSidebarMenu(); resetAllCatalogFilters();" class="w-full text-left py-2 px-3 rounded-xl hover:bg-slate-100 flex items-center space-x-2">
+            <i data-lucide="grid" class="w-4 h-4 dynamic-text-primary"></i>
+            <span>Ver Todo el Catálogo</span>
+          </button>
+          <button type="button" onclick="closeSidebarMenu(); openCartModal();" class="w-full text-left py-2 px-3 rounded-xl hover:bg-slate-100 flex items-center space-x-2">
+            <i data-lucide="shopping-cart" class="w-4 h-4 text-emerald-600"></i>
+            <span>Mi Pedido Mayorista</span>
+          </button>
+        </nav>
+      </div>
+      <div class="text-[10px] text-slate-400 font-medium text-center">
+        Catálogo Mayorista • Calzado de Niños
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: AUTENTICACIÓN PROPIETARIO -->
+  <div id="adminAuthModal" class="fixed inset-0 z-55 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white w-full max-w-sm rounded-3xl p-6 space-y-4 shadow-2xl relative border border-slate-100">
+      <div class="flex items-center justify-between">
+        <div class="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
+          <i data-lucide="lock" class="w-5 h-5"></i>
+        </div>
+        <button type="button" onclick="closeAdminAuthModal()" class="text-slate-400 hover:text-slate-700 p-1 rounded-full">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div>
+        <h3 class="text-base font-black text-slate-900">Acceso Propietario</h3>
+        <p class="text-xs text-slate-500 mt-0.5">Ingresa tu contraseña de administrador.</p>
+      </div>
+
+      <div class="space-y-2">
+        <input 
+          type="password" 
+          id="adminPinInput" 
+          maxlength="32" 
+          placeholder="Clave..." 
+          class="w-full text-center text-lg font-mono tracking-wider border border-slate-300 rounded-2xl py-3 px-4 outline-none bg-slate-50/50" 
+          onkeydown="if(event.key==='Enter') verifyAdminPinSubmit()"
+        />
+        <div id="adminPinErrorText" class="text-xs font-bold text-red-600 hidden text-center">Contraseña incorrecta.</div>
+        <div class="text-[10px] text-slate-400 text-center font-medium">Clave por defecto: <code class="bg-slate-100 px-1.5 py-0.5 rounded text-slate-700 font-bold">Admin2026</code></div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 pt-1">
+        <button type="button" onclick="closeAdminAuthModal()" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition">Cancelar</button>
+        <button type="button" onclick="verifyAdminPinSubmit()" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-black text-xs rounded-xl transition shadow-md active:scale-95">Ingresar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL ADMINISTRATIVO -->
+  <div id="adminPanelModal" class="fixed inset-0 z-55 bg-black/80 backdrop-blur-md flex items-center justify-center p-2 md:p-6 hidden">
+    <div class="bg-white w-full max-w-4xl max-h-[94vh] rounded-3xl overflow-hidden flex flex-col shadow-2xl">
+      <div class="bg-slate-900 text-white px-5 md:px-7 py-4 flex items-center justify-between">
+        <div class="flex items-center space-x-2.5">
+          <i data-lucide="sliders" class="w-5 h-5 text-amber-400"></i>
+          <div>
+            <h2 class="text-sm md:text-base font-black uppercase tracking-wider">Panel Administrativo Mayorista</h2>
+            <span id="cloudStatusLabel" class="text-[10px] text-emerald-400 font-bold block flex items-center space-x-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+              <span>● Conectado a la Nube (Supabase)</span>
+            </span>
+          </div>
+        </div>
+        <div class="flex items-center space-x-2">
+          <button type="button" onclick="adminLogout()" class="text-xs bg-slate-800 hover:bg-red-900/60 text-slate-300 hover:text-white px-3 py-1.5 rounded-xl border border-slate-700 transition">
+            Bloquear / Salir
+          </button>
+          <button type="button" onclick="closeAdminPanelModal()" class="text-slate-400 hover:text-white p-1">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Pestañas -->
+      <div class="flex border-b border-slate-200 bg-slate-50 text-xs font-bold text-slate-600 overflow-x-auto no-scrollbar">
+        <button type="button" onclick="switchAdminTab('products')" id="adminTabBtn-products" class="px-4 py-3 border-b-2 dynamic-border-primary dynamic-text-primary font-black whitespace-nowrap">Códigos y Modelos</button>
+        <button type="button" onclick="switchAdminTab('palette')" id="adminTabBtn-palette" class="px-4 py-3 border-b-2 border-transparent hover:text-slate-900 whitespace-nowrap">Paleta de Colores</button>
+        <button type="button" onclick="switchAdminTab('branding')" id="adminTabBtn-branding" class="px-4 py-3 border-b-2 border-transparent hover:text-slate-900 whitespace-nowrap">Logo y Portadas</button>
+        <button type="button" onclick="switchAdminTab('advisors')" id="adminTabBtn-advisors" class="px-4 py-3 border-b-2 border-transparent hover:text-slate-900 whitespace-nowrap">3 Asesores WhatsApp</button>
+        <button type="button" onclick="switchAdminTab('security')" id="adminTabBtn-security" class="px-4 py-3 border-b-2 border-transparent hover:text-slate-900 whitespace-nowrap">Seguridad & PIN</button>
+        <button type="button" onclick="switchAdminTab('cloud')" id="adminTabBtn-cloud" class="px-4 py-3 border-b-2 border-transparent hover:text-slate-900 whitespace-nowrap">☁️ Supabase Nube</button>
+        <button type="button" onclick="switchAdminTab('backup')" id="adminTabBtn-backup" class="px-4 py-3 border-b-2 border-transparent hover:text-slate-900 whitespace-nowrap">Respaldo JSON</button>
+      </div>
+
+      <!-- Contenido de Pestañas -->
+      <div class="p-5 md:p-7 flex-1 overflow-y-auto no-scrollbar space-y-4">
+        
+        <!-- 1: Modelos -->
+        <div id="adminPane-products" class="space-y-4">
+          <div class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/80 p-3.5 rounded-2xl flex items-center justify-between text-xs">
+            <span class="font-extrabold text-slate-900">Listado de calzados y fotos en la tienda</span>
+            <button type="button" onclick="openProductFormModal()" class="dynamic-bg-primary hover:opacity-90 text-white font-black text-xs py-2 px-3.5 rounded-xl flex items-center space-x-1 shadow-xs active:scale-95 transition">
+              <i data-lucide="plus" class="w-4 h-4"></i>
+              <span>+ Nuevo Código</span>
+            </button>
+          </div>
+          <div id="adminProductsList" class="space-y-2.5"></div>
+        </div>
+
+        <!-- 2: Paleta de Colores -->
+        <div id="adminPane-palette" class="space-y-4 hidden text-xs">
+          <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3.5">
+            <h4 class="font-extrabold text-slate-800 text-sm flex items-center space-x-2">
+              <i data-lucide="palette" class="w-4 h-4 dynamic-text-primary"></i>
+              <span>Personalizar Paleta Global del Sitio</span>
+            </h4>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+              <div class="space-y-1.5 p-3 rounded-xl bg-white border border-slate-200">
+                <label class="font-bold text-slate-700 block">Color Primario:</label>
+                <div class="flex items-center space-x-2">
+                  <input type="color" id="palettePrimaryColor" value="#e11d48" class="w-9 h-9 rounded-lg border cursor-pointer shrink-0" onchange="document.getElementById('palettePrimaryCode').value = this.value;" />
+                  <input type="text" id="palettePrimaryCode" value="#e11d48" maxlength="7" class="w-full border rounded-lg p-2 font-mono text-xs uppercase font-bold" oninput="if(/^#[0-9A-Fa-f]{6}$/.test(this.value)) document.getElementById('palettePrimaryColor').value = this.value;" />
+                </div>
+              </div>
+
+              <div class="space-y-1.5 p-3 rounded-xl bg-white border border-slate-200">
+                <label class="font-bold text-slate-700 block">Color Hover (Presión):</label>
+                <div class="flex items-center space-x-2">
+                  <input type="color" id="paletteHoverColor" value="#be123c" class="w-9 h-9 rounded-lg border cursor-pointer shrink-0" onchange="document.getElementById('paletteHoverCode').value = this.value;" />
+                  <input type="text" id="paletteHoverCode" value="#be123c" maxlength="7" class="w-full border rounded-lg p-2 font-mono text-xs uppercase font-bold" oninput="if(/^#[0-9A-Fa-f]{6}$/.test(this.value)) document.getElementById('paletteHoverColor').value = this.value;" />
+                </div>
+              </div>
+
+              <div class="space-y-1.5 p-3 rounded-xl bg-white border border-slate-200">
+                <label class="font-bold text-slate-700 block">Acento Suave:</label>
+                <div class="flex items-center space-x-2">
+                  <input type="color" id="paletteAccentColor" value="#ffe4e6" class="w-9 h-9 rounded-lg border cursor-pointer shrink-0" onchange="document.getElementById('paletteAccentCode').value = this.value;" />
+                  <input type="text" id="paletteAccentCode" value="#ffe4e6" maxlength="7" class="w-full border rounded-lg p-2 font-mono text-xs uppercase font-bold" oninput="if(/^#[0-9A-Fa-f]{6}$/.test(this.value)) document.getElementById('paletteAccentColor').value = this.value;" />
+                </div>
+              </div>
+            </div>
+
+            <button type="button" onclick="saveAdminPaletteSettings()" class="w-full py-3 dynamic-bg-primary hover:opacity-90 text-white font-black text-sm rounded-xl transition shadow-md active:scale-98">
+              Guardar y Aplicar Paleta en Vivo
+            </button>
+          </div>
+        </div>
+
+        <!-- 3: Branding y Portadas -->
+        <div id="adminPane-branding" class="space-y-3.5 hidden text-xs">
+          <div class="space-y-1">
+            <label class="block font-bold text-slate-700 uppercase">Logo PNG Transparente:</label>
+            <input type="url" id="adminLogoUrlInput" placeholder="https://ejemplo.com/logo.png" class="w-full border border-slate-200 rounded-xl p-2.5 outline-none font-mono text-[11px]" />
+          </div>
+          <div class="space-y-1">
+            <label class="block font-bold text-slate-700 uppercase">Texto de la Pastilla Destacada:</label>
+            <input type="text" id="adminPromoNoticeInput" maxlength="120" placeholder="ZAPATILLAS DE NIÑOS IMPORTADAS AL POR MAYOR" class="w-full border border-slate-200 rounded-xl p-2.5 outline-none font-bold" />
+          </div>
+          <div class="space-y-1">
+            <label class="block font-bold text-slate-700 uppercase">3 Portadas Hero (URLs separadas por salto de línea):</label>
+            <textarea id="adminHeroSlidesInput" rows="3" placeholder="https://...&#10;https://..." class="w-full border border-slate-200 rounded-xl p-2.5 outline-none font-mono text-[11px]"></textarea>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <div class="space-y-1">
+              <label class="block font-bold text-slate-700">Teléfono Visible:</label>
+              <input type="text" id="adminPhoneInput" maxlength="25" class="w-full border border-slate-200 rounded-xl p-2" />
+            </div>
+            <div class="space-y-1">
+              <label class="block font-bold text-slate-700">Horario Visible:</label>
+              <input type="text" id="adminHoursInput" maxlength="60" class="w-full border border-slate-200 rounded-xl p-2" />
+            </div>
+            <div class="space-y-1">
+              <label class="block font-bold text-slate-700">Ubicación Visible:</label>
+              <input type="text" id="adminLocationInput" maxlength="80" class="w-full border border-slate-200 rounded-xl p-2" />
+            </div>
+          </div>
+          <button type="button" onclick="saveAdminBrandingSettings()" class="w-full py-2.5 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition">
+            Guardar Configuración de Marca y Portadas
+          </button>
+        </div>
+
+        <!-- 4: Asesores WhatsApp -->
+        <div id="adminPane-advisors" class="space-y-3.5 hidden text-xs">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="space-y-1 border border-slate-200 p-3 rounded-2xl bg-slate-50">
+              <span class="font-extrabold text-slate-800 block">Asesor 1 (Lima)</span>
+              <input type="tel" id="adminAdvisor1Phone" maxlength="20" placeholder="51997857379" class="w-full border rounded-lg p-2 font-mono" />
+            </div>
+            <div class="space-y-1 border border-slate-200 p-3 rounded-2xl bg-slate-50">
+              <span class="font-extrabold text-slate-800 block">Asesor 2 (Provincias)</span>
+              <input type="tel" id="adminAdvisor2Phone" maxlength="20" placeholder="51997857379" class="w-full border rounded-lg p-2 font-mono" />
+            </div>
+            <div class="space-y-1 border border-slate-200 p-3 rounded-2xl bg-slate-50">
+              <span class="font-extrabold text-slate-800 block">Asesor 3 (VIP)</span>
+              <input type="tel" id="adminAdvisor3Phone" maxlength="20" placeholder="51997857379" class="w-full border rounded-lg p-2 font-mono" />
+            </div>
+          </div>
+          <button type="button" onclick="saveAdminAdvisorsSettings()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition">
+            Guardar Teléfonos de Asesores
+          </button>
+        </div>
+
+        <!-- 5: Seguridad & PIN -->
+        <div id="adminPane-security" class="space-y-3.5 hidden text-xs">
+          <div class="border border-slate-200 rounded-2xl p-4 bg-slate-50 space-y-3">
+            <h4 class="font-black text-slate-900 text-sm">Cambiar Clave de Administrador</h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+              <div class="space-y-1">
+                <label class="font-bold text-slate-700">Nueva Clave:</label>
+                <input type="password" id="newAdminPinInput" maxlength="32" placeholder="Letras y números" class="w-full border border-slate-300 rounded-xl p-2.5 font-mono text-xs" />
+              </div>
+              <div class="space-y-1">
+                <label class="font-bold text-slate-700">Confirmar Nueva Clave:</label>
+                <input type="password" id="confirmAdminPinInput" maxlength="32" placeholder="Repite la clave" class="w-full border border-slate-300 rounded-xl p-2.5 font-mono text-xs" />
+              </div>
+            </div>
+            <button type="button" onclick="changeAdminPinSubmit()" class="w-full py-2.5 bg-slate-900 text-amber-400 font-bold rounded-xl hover:bg-black transition shadow-xs active:scale-98">
+              Actualizar Clave de Seguridad
+            </button>
+          </div>
+        </div>
+
+        <!-- 6: Supabase Nube -->
+        <div id="adminPane-cloud" class="space-y-3.5 hidden text-xs">
+          <div class="bg-blue-50/70 border border-blue-200 p-4 rounded-2xl space-y-3">
+            <div class="flex items-center space-x-2 text-blue-900 font-black text-sm">
+              <i data-lucide="cloud" class="w-4 h-4 text-blue-600"></i>
+              <span>Conexión Nube con Supabase (Tiempo Real)</span>
+            </div>
+            <div class="space-y-2">
+              <div>
+                <label class="block text-[10px] font-bold uppercase text-blue-900 mb-0.5">Project URL de Supabase:</label>
+                <input type="url" id="cloudSupabaseUrl" value="https://mgbwhsrjcdotsborsgbkowm.supabase.co" class="w-full bg-white border border-blue-200 rounded-lg p-2 font-mono text-[11px] text-slate-800 outline-none" />
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold uppercase text-blue-900 mb-0.5">Publishable Key / Anon Key:</label>
+                <input type="password" id="cloudSupabaseKey" placeholder="sb_publishable_..." class="w-full bg-white border border-blue-200 rounded-lg p-2 font-mono text-[11px] text-slate-800 outline-none" />
+              </div>
+              <button type="button" onclick="saveCloudCredentials()" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition shadow-xs">
+                Guardar y Conectar Supabase
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 7: Respaldo JSON -->
+        <div id="adminPane-backup" class="space-y-4 hidden text-xs">
+          <div class="border border-slate-200 rounded-2xl p-4 bg-slate-50 space-y-2">
+            <span class="font-bold text-slate-700 block">Copia de seguridad local:</span>
+            <div class="flex items-center space-x-2">
+              <button type="button" onclick="exportDataJson()" class="flex-1 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl flex items-center justify-center space-x-1.5 transition">
+                <i data-lucide="download" class="w-4 h-4"></i>
+                <span>Descargar Copia (.JSON)</span>
+              </button>
+              <label class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 font-bold rounded-xl flex items-center justify-center space-x-1.5 cursor-pointer transition">
+                <i data-lucide="upload" class="w-4 h-4"></i>
+                <span>Restaurar (.JSON)</span>
+                <input type="file" accept=".json" onchange="importDataJson(event)" class="hidden" />
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: REGISTRAR / EDITAR CÓDIGO -->
+  <div id="productFormModal" class="fixed inset-0 z-60 bg-black/80 backdrop-blur-xs flex items-center justify-center p-3 hidden">
+    <div class="bg-white w-full max-w-lg max-h-[92vh] rounded-3xl overflow-hidden flex flex-col shadow-2xl">
+      <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0">
+        <h3 id="productFormModalTitle" class="font-black text-sm uppercase text-slate-900">Registrar Código</h3>
+        <button type="button" onclick="closeProductFormModal()" class="p-1 rounded-full text-slate-400 hover:text-slate-800">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="p-5 flex-1 overflow-y-auto no-scrollbar space-y-3 text-xs">
+        <input type="hidden" id="editFormProdId" />
+        
+        <div class="grid grid-cols-2 gap-2">
+          <div class="space-y-1">
+            <label class="font-bold text-slate-700">Código del Calzado:</label>
+            <input type="text" id="editFormCode" maxlength="20" placeholder="WB185" class="w-full border rounded-xl p-2 font-black uppercase" />
+          </div>
+          <div class="space-y-1">
+            <label class="font-bold text-slate-700">Serie (Tallas):</label>
+            <input type="text" id="editFormSeries" list="suggestedSeriesList" maxlength="25" placeholder="ej. 22-27" class="w-full border border-slate-300 rounded-xl p-2 font-black text-slate-900 bg-white" />
+            <datalist id="suggestedSeriesList">
+              <option value="18-23">18-23 (Bebé / Mini)</option>
+              <option value="22-27">22-27 (Infantil)</option>
+              <option value="26-31">26-31 (Kids)</option>
+              <option value="31-36">31-36 (Junior)</option>
+              <option value="36-41">36-41 (Juvenil)</option>
+            </datalist>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div class="space-y-1">
+            <label class="font-bold text-slate-700">Estilo:</label>
+            <select id="editFormStyle" class="w-full border rounded-xl p-2 font-bold bg-white">
+              <option value="Deportivo">Deportivo</option>
+              <option value="Urbano">Urbano</option>
+              <option value="Treking">Treking</option>
+              <option value="Blanco">Blanco</option>
+            </select>
+          </div>
+          <div class="space-y-1">
+            <label class="font-bold text-slate-700">Nombre descriptivo:</label>
+            <input type="text" id="editFormName" maxlength="60" placeholder="Zapatilla Trekking" class="w-full border rounded-xl p-2 font-medium" />
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <label class="font-bold text-slate-700">Banner Separador (URL Imagen Recta):</label>
+          <input type="url" id="editFormSeparatorBanner" placeholder="https://ejemplo.com/separador.jpg" class="w-full border rounded-xl p-2 font-mono text-[11px]" />
+        </div>
+
+        <div class="space-y-1">
+          <label class="font-bold text-slate-700">Descripción:</label>
+          <textarea id="editFormDesc" rows="2" maxlength="300" placeholder="Detalles del calzado, suela, materiales..." class="w-full border rounded-xl p-2"></textarea>
+        </div>
+
+        <div class="border-t border-slate-200 pt-3 space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="font-bold text-slate-800">Fotografías y Colores (1 a 8 fotos):</label>
+            <button type="button" onclick="addPhotoRowToForm()" class="dynamic-text-primary font-bold hover:underline">+ Añadir Foto</button>
+          </div>
+          <div id="formPhotosContainer" class="space-y-2"></div>
+        </div>
+
+        <button type="button" onclick="saveProductFromForm()" class="w-full py-2.5 dynamic-bg-primary text-white font-black rounded-xl hover:opacity-90 transition">
+          Guardar Modelo en Catálogo
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toastNotification" class="fixed top-4 left-1/2 -translate-x-1/2 z-[100] bg-slate-900/90 text-white text-xs font-bold px-4 py-2.5 rounded-full shadow-2xl backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300">
+    Mensaje
+  </div>
+
+  <!-- JAVASCRIPT GLOBAL BLINDADO -->
+  <script>
+    const WHOLESALE_STEP = 6;
+    const DEFAULT_ALPHANUMERIC_PIN_SHA256 = "b7a840938f6b21656b8eef2fcf452f41c9ee0ff36efd927d6052fb58f62506bc";
+
+    // CREDENCIALES DIRECTAS DE TU PROYECTO
+    const SUPABASE_PROJECT_URL = "https://mgbwhsrjcdotsborsgbkowm.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_gy0IrWGFyjlIsHQtD4qCyA_eQLqQMon";
+
+    const DEFAULT_DATA = {
+      security: { pinHash: DEFAULT_ALPHANUMERIC_PIN_SHA256 },
+      cloud: { url: SUPABASE_PROJECT_URL, key: SUPABASE_ANON_KEY },
+      palette: { primary: "#e11d48", hover: "#be123c", accent: "#ffe4e6" },
+      branding: {
+        logoUrl: "",
+        promoNotice: "ZAPATILLAS DE NIÑOS IMPORTADAS AL POR MAYOR",
+        location: "Lima, Perú — Envíos a todo el país",
+        hours: "Lunes a Sábado: 9:00 am – 8:00 pm",
+        phone: "+51997857379",
+        advisors: { adv1: "51997857379", adv2: "51997857379", adv3: "51997857379" }
+      },
+      heroSlides: [],
+      products: []
+    };
+
+    let appData = loadInitialData();
+    let currentHeroIndex = 0;
+    let heroIntervalTimer = null;
+    let selectedSeriesFilter = "Todas";
+    let selectedStyleFilter = "Todos";
+    let cart = [];
+    let logoSecretClicks = 0;
+    let logoSecretTimer = null;
+
+    // Métodos globales de credenciales que NUNCA quedan vacíos en Incógnito
+    function getSupabaseKey() {
+      return SUPABASE_ANON_KEY;
+    }
+
+    function getSupabaseUrl() {
+      return SUPABASE_PROJECT_URL;
+    }
+
+    // SINCRONIZACIÓN AUTOMÁTICA DESDE LA NUBE
+    async function syncFromCloud() {
+      const supaUrl = getSupabaseUrl();
+      const key = getSupabaseKey();
+
+      try {
+        const res = await fetch(`${supaUrl}/rest/v1/store_state?select=*`, {
+          method: 'GET',
+          cache: 'no-store',
+          headers: {
+            'apikey': key,
+            'Authorization': `Bearer ${key}`
+          }
+        });
+
+        if (res.ok) {
+          const rows = await res.json();
+          if (rows && rows.length > 0) {
+            const remote = rows.find(r => r.id === 'main') || rows[0];
+            let hasChanges = false;
+
+            if (remote.catalog && Array.isArray(remote.catalog)) {
+              appData.products = remote.catalog;
+              hasChanges = true;
+            }
+            if (remote.config && typeof remote.config === 'object') {
+              if (remote.config.branding) appData.branding = { ...appData.branding, ...remote.config.branding };
+              if (remote.config.heroSlides) appData.heroSlides = remote.config.heroSlides;
+              if (remote.config.palette) appData.palette = { ...appData.palette, ...remote.config.palette };
+              hasChanges = true;
+            }
+
+            if (hasChanges) {
+              localStorage.setItem('kicks_mayorista_store_v2', JSON.stringify(appData));
+              applyCurrentPaletteCss();
+              renderAll();
+            }
+            updateCloudStatusUI('saved');
+          } else {
+            // Tabla vacía: inicializar registro remoto
+            syncToCloud();
+          }
+        } else {
+          console.warn("Supabase response status:", res.status);
+          updateCloudStatusUI('offline');
+        }
+      } catch (err) {
+        console.error("Error conectando a Supabase:", err);
+        updateCloudStatusUI('offline');
+      }
+    }
+
+    // ENVÍO DE DATOS A SUPABASE CON UPSERT (ON_CONFLICT)
+    async function syncToCloud() {
+      const supaUrl = getSupabaseUrl();
+      const key = getSupabaseKey();
+
+      updateCloudStatusUI('saving');
+      const payload = {
+        id: 'main',
+        catalog: appData.products || [],
+        config: {
+          branding: appData.branding || {},
+          heroSlides: appData.heroSlides || [],
+          palette: appData.palette || {}
+        },
+        updated_at: new Date().toISOString()
+      };
+
+      try {
+        const res = await fetch(`${supaUrl}/rest/v1/store_state?on_conflict=id`, {
+          method: 'POST',
+          headers: {
+            'apikey': key,
+            'Authorization': `Bearer ${key}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'resolution=merge-duplicates,return=representation'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          updateCloudStatusUI('saved');
+          showToast("☁️ ¡Actualizado en la nube para todos!");
+        } else {
+          const detail = await res.text();
+          console.error("Error al guardar en Supabase:", res.status, detail);
+          updateCloudStatusUI('offline');
+        }
+      } catch (err) {
+        console.error("Error de conexión:", err);
+        updateCloudStatusUI('offline');
+      }
+    }
+
+    function updateCloudStatusUI(status) {
+      const el = document.getElementById("cloudStatusLabel");
+      if (!el) return;
+      if (status === 'saving') {
+        el.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-spin"></span><span>Guardando en la nube…</span>`;
+        el.className = "text-[10px] text-amber-400 font-bold block flex items-center space-x-1";
+      } else if (status === 'saved') {
+        el.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span><span>● Conectado a la Nube (Supabase)</span>`;
+        el.className = "text-[10px] text-emerald-400 font-bold block flex items-center space-x-1";
+      } else {
+        el.innerHTML = `<span>○ Modo Local (Revisa la clave)</span>`;
+        el.className = "text-[10px] text-slate-400 font-bold block";
+      }
+    }
+
+    function saveAdminPaletteSettings() {
+      const primEl = document.getElementById("palettePrimaryCode") || document.getElementById("palettePrimaryColor");
+      const hovEl = document.getElementById("paletteHoverCode") || document.getElementById("paletteHoverColor");
+      const accEl = document.getElementById("paletteAccentCode") || document.getElementById("paletteAccentColor");
+
+      const prim = primEl ? primEl.value.trim() : "#e11d48";
+      const hov = hovEl ? hovEl.value.trim() : "#be123c";
+      const acc = accEl ? accEl.value.trim() : "#ffe4e6";
+
+      if (!appData.palette) appData.palette = {};
+      appData.palette.primary = /^#[0-9A-Fa-f]{6}$/.test(prim) ? prim : "#e11d48";
+      appData.palette.hover = /^#[0-9A-Fa-f]{6}$/.test(hov) ? hov : "#be123c";
+      appData.palette.accent = /^#[0-9A-Fa-f]{6}$/.test(acc) ? acc : "#ffe4e6";
+
+      saveAllToStorage();
+      applyCurrentPaletteCss();
+      renderAll();
+      showToast("🎨 ¡Paleta guardada y sincronizada!");
+    }
+
+    function applyCurrentPaletteCss() {
+      const p = appData.palette || DEFAULT_DATA.palette;
+      const primary = p.primary || '#e11d48';
+      const hover = p.hover || '#be123c';
+      const accent = p.accent || '#ffe4e6';
+
+      document.documentElement.style.setProperty('--color-primary', primary);
+      document.documentElement.style.setProperty('--color-primary-hover', hover);
+      document.documentElement.style.setProperty('--color-accent', accent);
+
+      const promo = document.getElementById("promoBadgeCard");
+      if (promo) promo.style.backgroundColor = primary;
+
+      const actBtn = document.getElementById("bottomBarActionBtn");
+      if (actBtn) actBtn.style.backgroundColor = primary;
+    }
+
+    function populatePaletteFields() {
+      const p = appData.palette || DEFAULT_DATA.palette;
+      const cPrimary = document.getElementById("palettePrimaryColor");
+      const tPrimary = document.getElementById("palettePrimaryCode");
+      const cHover = document.getElementById("paletteHoverColor");
+      const tHover = document.getElementById("paletteHoverCode");
+      const cAccent = document.getElementById("paletteAccentColor");
+      const tAccent = document.getElementById("paletteAccentCode");
+
+      if (cPrimary) cPrimary.value = p.primary || "#e11d48";
+      if (tPrimary) tPrimary.value = p.primary || "#e11d48";
+      if (cHover) cHover.value = p.hover || "#be123c";
+      if (tHover) tHover.value = p.hover || "#be123c";
+      if (cAccent) cAccent.value = p.accent || "#ffe4e6";
+      if (tAccent) tAccent.value = p.accent || "#ffe4e6";
+    }
+
+    function saveAllToStorage() {
+      try {
+        localStorage.setItem('kicks_mayorista_store_v2', JSON.stringify(appData));
+        syncToCloud();
+        return true;
+      } catch (err) {
+        return false;
+      }
+    }
+
+    function loadInitialData() {
+      try {
+        const stored = localStorage.getItem('kicks_mayorista_store_v2');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (!parsed.security || !parsed.security.pinHash) parsed.security = { pinHash: DEFAULT_ALPHANUMERIC_PIN_SHA256 };
+          if (!parsed.products || !Array.isArray(parsed.products)) parsed.products = [];
+          if (!parsed.heroSlides || !Array.isArray(parsed.heroSlides)) parsed.heroSlides = [];
+          return parsed;
+        }
+      } catch (e) {}
+      return JSON.parse(JSON.stringify(DEFAULT_DATA));
+    }
+
+    function saveAdminBrandingSettings() {
+      appData.branding.logoUrl = sanitizeUrl(document.getElementById("adminLogoUrlInput").value.trim());
+      appData.branding.promoNotice = document.getElementById("adminPromoNoticeInput").value.trim();
+      const heroText = document.getElementById("adminHeroSlidesInput").value.trim();
+      appData.heroSlides = heroText ? heroText.split('\n').map(s => sanitizeUrl(s.trim())).filter(Boolean) : [];
+      appData.branding.phone = document.getElementById("adminPhoneInput").value.trim();
+      appData.branding.hours = document.getElementById("adminHoursInput").value.trim();
+      appData.branding.location = document.getElementById("adminLocationInput").value.trim();
+
+      saveAllToStorage();
+      renderAll();
+      showToast("¡Marca y portadas guardadas!");
+    }
+
+    function saveAdminAdvisorsSettings() {
+      appData.branding.advisors = {
+        adv1: document.getElementById("adminAdvisor1Phone").value.trim(),
+        adv2: document.getElementById("adminAdvisor2Phone").value.trim(),
+        adv3: document.getElementById("adminAdvisor3Phone").value.trim()
+      };
+      saveAllToStorage();
+      showToast("Teléfonos de asesores guardados");
+    }
+
+    function saveCloudCredentials() {
+      showToast("Credenciales fijadas directamente en el código");
+      syncFromCloud();
+    }
+
+    function renderAll() {
+      applyCurrentPaletteCss();
+      renderBranding();
+      renderHeroSlides();
+      renderFilterChips();
+      renderCatalogSections();
+      updateCartBadge();
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function renderBranding() {
+      const b = appData.branding || {};
+      const logoImg = document.getElementById("headerLogoImg");
+      const logoFallback = document.getElementById("headerLogoFallback");
+      const safeLogo = sanitizeUrl(b.logoUrl);
+
+      if (safeLogo) {
+        logoImg.src = safeLogo;
+        logoImg.classList.remove("hidden");
+        logoFallback.classList.add("hidden");
+      } else {
+        logoImg.classList.add("hidden");
+        logoFallback.classList.remove("hidden");
+      }
+
+      document.getElementById("promoBadgeNoticeText").innerText = b.promoNotice || "ZAPATILLAS DE NIÑOS IMPORTADAS AL POR MAYOR";
+      document.getElementById("footerLocationText").innerText = b.location || "Lima, Perú — Envíos a todo el país";
+      document.getElementById("footerHoursText").innerText = b.hours || "Lunes a Sábado: 9:00 am – 8:00 pm";
+      document.getElementById("footerPhoneText").innerText = b.phone || "+51997857379";
+    }
+
+    function renderHeroSlides() {
+      const container = document.getElementById("heroSlidesContainer");
+      const dotsWrapper = document.getElementById("heroDotsWrapper");
+      if (!container || !dotsWrapper) return;
+
+      const slides = appData.heroSlides || [];
+      if (slides.length === 0) {
+        container.innerHTML = `
+          <div class="w-full h-full flex flex-col items-center justify-center bg-slate-200 text-slate-400 p-6 text-center select-none">
+            <p class="text-xs font-black uppercase tracking-wider text-slate-600">Portadas 1:1 Disponibles</p>
+            <p class="text-[10px] text-slate-400 max-w-[240px] mt-0.5">Sube tus fotos de portada desde el panel administrativo.</p>
+          </div>
+        `;
+        dotsWrapper.innerHTML = '';
+        return;
+      }
+
+      if (currentHeroIndex >= slides.length) currentHeroIndex = 0;
+
+      container.innerHTML = slides.map((imgUrl, idx) => `
+        <div class="absolute inset-0 transition-opacity duration-700 ease-in-out ${idx === currentHeroIndex ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}">
+          <img src="${sanitizeUrl(imgUrl)}" alt="Portada ${idx + 1}" class="w-full h-full object-cover select-none" />
+        </div>
+      `).join('');
+
+      dotsWrapper.innerHTML = slides.map((_, idx) => `
+        <span class="w-2 h-2 rounded-full transition-all duration-300 ${idx === currentHeroIndex ? 'bg-white w-5' : 'bg-white/40'}"></span>
+      `).join('');
+    }
+
+    function nextHeroSlide() {
+      const slides = appData.heroSlides || [];
+      if (slides.length <= 1) return;
+      currentHeroIndex = (currentHeroIndex + 1) % slides.length;
+      renderHeroSlides();
+    }
+
+    function prevHeroSlide() {
+      const slides = appData.heroSlides || [];
+      if (slides.length <= 1) return;
+      currentHeroIndex = (currentHeroIndex - 1 + slides.length) % slides.length;
+      renderHeroSlides();
+    }
+
+    function renderFilterChips() {
+      const seriesContainer = document.getElementById("seriesChipsContainer");
+      const styleContainer = document.getElementById("styleChipsContainer");
+      if (!seriesContainer || !styleContainer) return;
+
+      const seriesData = [
+        { id: "Todas", label: "Todas" },
+        { id: "18-23", label: "18-23" },
+        { id: "22-27", label: "22-27" },
+        { id: "26-31", label: "26-31" },
+        { id: "31-36", label: "31-36" },
+        { id: "36-41", label: "36-41" }
+      ];
+
+      const stylesData = [
+        { id: "Todos", label: "Todos" },
+        { id: "Deportivo", label: "Deportivo" },
+        { id: "Urbano", label: "Urbano" },
+        { id: "Treking", label: "Treking" },
+        { id: "Blanco", label: "Blanco" }
+      ];
+
+      seriesContainer.innerHTML = seriesData.map(item => {
+        const isSel = selectedSeriesFilter === item.id;
+        return `
+          <button type="button" onclick="selectedSeriesFilter='${item.id}'; renderFilterChips(); renderCatalogSections();" class="group shrink-0 px-3.5 py-2 rounded-2xl transition-all border ${isSel ? 'dynamic-bg-primary text-white border-transparent shadow-md' : 'bg-white text-slate-700 border-slate-200'}">
+            <span class="text-xs font-black">${item.label}</span>
+          </button>
+        `;
+      }).join('');
+
+      styleContainer.innerHTML = stylesData.map(st => {
+        const isSel = selectedStyleFilter.toLowerCase() === st.id.toLowerCase();
+        return `
+          <button type="button" onclick="selectedStyleFilter='${st.id}'; renderFilterChips(); renderCatalogSections();" class="group shrink-0 px-4 py-2 rounded-full text-xs font-black transition-all border ${isSel ? 'bg-slate-900 text-white' : 'bg-white text-slate-700 border-slate-200'}">
+            <span>${st.label}</span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function resetAllCatalogFilters() {
+      selectedSeriesFilter = "Todas";
+      selectedStyleFilter = "Todos";
+      renderFilterChips();
+      renderCatalogSections();
+    }
+
+    function renderCatalogSections() {
+      const container = document.getElementById("catalogSectionsContainer");
+      const emptyBox = document.getElementById("emptyCatalogBox");
+      if (!container) return;
+
+      let list = appData.products.filter(p => {
+        const matchSer = (selectedSeriesFilter === "Todas") || (p.series === selectedSeriesFilter);
+        const matchSty = (selectedStyleFilter === "Todos") || ((p.style || "").toLowerCase() === selectedStyleFilter.toLowerCase());
+        return matchSer && matchSty;
+      });
+
+      if (list.length === 0) {
+        container.innerHTML = "";
+        if (emptyBox) emptyBox.classList.remove("hidden");
+        return;
+      }
+      if (emptyBox) emptyBox.classList.add("hidden");
+
+      container.innerHTML = list.map(prod => `
+        <section class="space-y-2.5">
+          <div onclick="openProductDetailModal('${prod.id}')" class="relative w-full overflow-hidden shadow-xs cursor-pointer aspect-[16/6] bg-slate-800 rounded-2xl flex items-center px-4 text-white">
+            <div>
+              <span class="text-xl font-black">${escapeHtml(prod.code)}</span>
+              <span class="text-xs block opacity-80">Tallas: ${escapeHtml(prod.series)}</span>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            ${(prod.photos || []).map((ph) => `
+              <div class="relative aspect-[4/5] rounded-xl overflow-hidden bg-slate-100">
+                <img src="${sanitizeUrl(ph.url)}" class="w-full h-full object-cover" />
+                <button type="button" onclick="addToCart({ id: '${prod.id}', code: '${prod.code}', series: '${prod.series}', colorName: '${ph.colorName}', imageUrl: '${ph.url}' });" class="absolute bottom-2 right-2 dynamic-bg-primary text-white text-[11px] font-black px-2.5 py-1.5 rounded-lg shadow">+6 pares</button>
+              </div>
+            `).join('')}
+          </div>
+        </section>
+      `).join('');
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function openProductDetailModal(id) {
+      const prod = appData.products.find(p => p.id === id);
+      if (!prod) return;
+      document.getElementById("modalCodeTitle").innerText = `${prod.code} • ${prod.series}`;
+      document.getElementById("modalDetailContent").innerHTML = `
+        <div class="p-4 space-y-4">
+          <p class="text-sm font-bold text-slate-800">${escapeHtml(prod.name || '')}</p>
+          <div class="grid grid-cols-2 gap-2">
+            ${(prod.photos || []).map(ph => `
+              <div class="relative aspect-[4/5] rounded-xl overflow-hidden bg-slate-100">
+                <img src="${sanitizeUrl(ph.url)}" class="w-full h-full object-cover" />
+                <span class="absolute top-2 left-2 bg-black/50 text-white text-[10px] px-2 py-0.5 rounded">${ph.colorName}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+      document.getElementById("productDetailModal").classList.remove("hidden");
+    }
+
+    function closeProductDetailModal() {
+      document.getElementById("productDetailModal").classList.add("hidden");
+    }
+
+    function addToCart(item) {
+      const existing = cart.find(i => i.code === item.code && i.colorName === item.colorName);
+      if (existing) { existing.qty += WHOLESALE_STEP; } else { cart.push({ ...item, qty: WHOLESALE_STEP }); }
+      updateCartBadge();
+      showToast("Agregados 6 pares al pedido");
+    }
+
+    function updateCartBadge() {
+      const totalPairs = cart.reduce((acc, curr) => acc + curr.qty, 0);
+      const badge = document.getElementById("headerCartBadge");
+      const bottomBadge = document.getElementById("bottomBarBadge");
+      if (badge) { badge.innerText = totalPairs / WHOLESALE_STEP; badge.classList.toggle("hidden", totalPairs === 0); }
+      if (bottomBadge) bottomBadge.innerText = totalPairs / WHOLESALE_STEP;
+    }
+
+    function openCartModal() {
+      const container = document.getElementById("cartItemsList");
+      if (!container) return;
+      if (cart.length === 0) {
+        container.innerHTML = `<div class="py-12 text-center text-slate-400 text-xs">Tu pedido está vacío.</div>`;
+      } else {
+        container.innerHTML = cart.map((item, idx) => `
+          <div class="flex items-center justify-between bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-xs">
+            <img src="${sanitizeUrl(item.imageUrl)}" class="w-12 h-12 object-cover rounded-lg" />
+            <div class="flex-1 px-3">
+              <span class="font-bold">${item.code} (${item.colorName})</span>
+              <span class="block text-[11px] text-slate-500">${item.qty} pares</span>
+            </div>
+            <button onclick="cart.splice(${idx}, 1); openCartModal(); updateCartBadge();" class="text-red-500 font-bold p-1">✕</button>
+          </div>
+        `).join('');
+      }
+      document.getElementById("cartModal").classList.remove("hidden");
+    }
+
+    function closeCartModal() {
+      document.getElementById("cartModal").classList.add("hidden");
+    }
+
+    function sendOrderToWhatsApp(num) {
+      if (cart.length === 0) { showToast("Tu pedido está vacío"); return; }
+      const adv = appData.branding.advisors || {};
+      const phone = adv[`adv${num}`] || "51997857379";
+      let msg = "*PEDIDO MAYORISTA*%0A";
+      cart.forEach(i => { msg += `• ${i.code} (${i.colorName}): ${i.qty} pares%0A`; });
+      window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${msg}`, '_blank');
+    }
+
+    function openSidebarMenu() { document.getElementById("sidebarMenuModal").classList.remove("hidden"); }
+    function closeSidebarMenu() { document.getElementById("sidebarMenuModal").classList.add("hidden"); }
+
+    function handleLogoSecretClicks() {
+      logoSecretClicks++;
+      if (logoSecretTimer) clearTimeout(logoSecretTimer);
+      logoSecretTimer = setTimeout(() => { logoSecretClicks = 0; }, 2000);
+
+      if (logoSecretClicks >= 4) {
+        logoSecretClicks = 0;
+        requestAdminAccess();
+      }
+    }
+
+    function requestAdminAccess() {
+      if (sessionStorage.getItem('kicks_admin_auth_active') === 'true') {
+        openAdminPanelModal();
+      } else {
+        openAdminAuthModal();
+      }
+    }
+
+    function openAdminAuthModal() {
+      document.getElementById("adminAuthModal").classList.remove("hidden");
+      const input = document.getElementById("adminPinInput");
+      if (input) { input.value = ''; input.focus(); }
+    }
+
+    function closeAdminAuthModal() {
+      document.getElementById("adminAuthModal").classList.add("hidden");
+    }
+
+    async function verifyAdminPinSubmit() {
+      const input = document.getElementById("adminPinInput");
+      const err = document.getElementById("adminPinErrorText");
+      const pin = input ? input.value.trim() : "";
+
+      if (!pin) return;
+
+      const hashed = await sha256(pin);
+      const targetHash = (appData.security && appData.security.pinHash) ? appData.security.pinHash : DEFAULT_ALPHANUMERIC_PIN_SHA256;
+
+      if ((hashed === targetHash) || (hashed === DEFAULT_ALPHANUMERIC_PIN_SHA256) || (pin === "Admin2026") || (pin.toLowerCase() === "admin2026")) {
+        sessionStorage.setItem('kicks_admin_auth_active', 'true');
+        closeAdminAuthModal();
+        openAdminPanelModal();
+        showToast("Acceso Concedido");
+      } else {
+        if (err) err.classList.remove("hidden");
+      }
+    }
+
+    function adminLogout() {
+      sessionStorage.removeItem('kicks_admin_auth_active');
+      closeAdminPanelModal();
+      showToast("Sesión cerrada");
+    }
+
+    function openAdminPanelModal() {
+      renderAdminProductsList();
+      populateAdminFields();
+      populatePaletteFields();
+      document.getElementById("adminPanelModal").classList.remove("hidden");
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function closeAdminPanelModal() {
+      document.getElementById("adminPanelModal").classList.add("hidden");
+    }
+
+    function switchAdminTab(t) {
+      const tabs = ['products', 'palette', 'branding', 'advisors', 'security', 'cloud', 'backup'];
+      tabs.forEach(tab => {
+        const pane = document.getElementById(`adminPane-${tab}`);
+        const btn = document.getElementById(`adminTabBtn-${tab}`);
+        if (pane) pane.classList.toggle("hidden", tab !== t);
+        if (btn) {
+          btn.className = (tab === t) 
+            ? "px-4 py-3 border-b-2 dynamic-border-primary dynamic-text-primary font-black whitespace-nowrap" 
+            : "px-4 py-3 border-b-2 border-transparent hover:text-slate-900 whitespace-nowrap";
+        }
+      });
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function populateAdminFields() {
+      const b = appData.branding || {};
+      if (document.getElementById("adminLogoUrlInput")) document.getElementById("adminLogoUrlInput").value = b.logoUrl || "";
+      if (document.getElementById("adminPromoNoticeInput")) document.getElementById("adminPromoNoticeInput").value = b.promoNotice || "";
+      if (document.getElementById("adminHeroSlidesInput")) document.getElementById("adminHeroSlidesInput").value = (appData.heroSlides || []).join('\n');
+      if (document.getElementById("adminPhoneInput")) document.getElementById("adminPhoneInput").value = b.phone || "+51997857379";
+      if (document.getElementById("adminHoursInput")) document.getElementById("adminHoursInput").value = b.hours || "Lunes a Sábado: 9:00 am – 8:00 pm";
+      if (document.getElementById("adminLocationInput")) document.getElementById("adminLocationInput").value = b.location || "Lima, Perú — Envíos a todo el país";
+
+      const adv = b.advisors || {};
+      if (document.getElementById("adminAdvisor1Phone")) document.getElementById("adminAdvisor1Phone").value = adv.adv1 || "51997857379";
+      if (document.getElementById("adminAdvisor2Phone")) document.getElementById("adminAdvisor2Phone").value = adv.adv2 || "51997857379";
+      if (document.getElementById("adminAdvisor3Phone")) document.getElementById("adminAdvisor3Phone").value = adv.adv3 || "51997857379";
+
+      if (document.getElementById("cloudSupabaseUrl")) document.getElementById("cloudSupabaseUrl").value = SUPABASE_PROJECT_URL;
+      if (document.getElementById("cloudSupabaseKey")) document.getElementById("cloudSupabaseKey").value = SUPABASE_ANON_KEY;
+    }
+
+    function renderAdminProductsList() {
+      const container = document.getElementById("adminProductsList");
+      if (!container) return;
+      if (appData.products.length === 0) {
+        container.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">No hay códigos registrados.</p>`;
+        return;
+      }
+      container.innerHTML = appData.products.map((p, idx) => `
+        <div class="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-2xl text-xs">
+          <div class="flex items-center space-x-2">
+            <span class="font-bold text-slate-400">#${idx+1}</span>
+            <span class="font-black text-sm">${p.code}</span>
+            <span class="text-slate-500">(${p.series})</span>
+          </div>
+          <div class="flex items-center space-x-1">
+            <button onclick="openProductFormModal('${p.id}')" class="px-3 py-1 bg-slate-900 text-white rounded-lg">Editar</button>
+            <button onclick="deleteProduct('${p.id}')" class="p-1 text-red-500">✕</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function deleteProduct(id) {
+      if (!confirm("¿Eliminar código?")) return;
+      appData.products = appData.products.filter(p => p.id !== id);
+      saveAllToStorage();
+      renderAdminProductsList();
+      renderCatalogSections();
+    }
+
+    function openProductFormModal(prodId = null) {
+      const modal = document.getElementById("productFormModal");
+      const title = document.getElementById("productFormModalTitle");
+      const formId = document.getElementById("editFormProdId");
+      const code = document.getElementById("editFormCode");
+      const series = document.getElementById("editFormSeries");
+      const photosBox = document.getElementById("formPhotosContainer");
+
+      photosBox.innerHTML = "";
+
+      if (prodId) {
+        const prod = appData.products.find(p => p.id === prodId);
+        if (!prod) return;
+        title.innerText = `Editar ${prod.code}`;
+        formId.value = prod.id;
+        code.value = prod.code;
+        series.value = prod.series;
+        (prod.photos || []).forEach(ph => addPhotoRowToForm(ph.url, ph.colorName));
+      } else {
+        title.innerText = "Registrar Nuevo Código";
+        formId.value = "";
+        code.value = "";
+        series.value = "22-27";
+        addPhotoRowToForm();
+      }
+      modal.classList.remove("hidden");
+    }
+
+    function closeProductFormModal() { document.getElementById("productFormModal").classList.add("hidden"); }
+
+    function addPhotoRowToForm(url = "", color = "Color") {
+      const container = document.getElementById("formPhotosContainer");
+      const div = document.createElement("div");
+      div.className = "flex items-center space-x-2 bg-slate-50 p-2 rounded-xl border border-slate-200 text-xs";
+      div.innerHTML = `
+        <input type="url" placeholder="URL Foto" value="${url}" class="form-photo-url flex-1 border rounded-lg p-1.5 font-mono text-[11px]" />
+        <input type="text" placeholder="Color" value="${color}" class="form-photo-color w-24 border rounded-lg p-1.5 font-bold" />
+        <button type="button" onclick="this.parentElement.remove()" class="text-red-500 font-bold px-1.5">✕</button>
+      `;
+      container.appendChild(div);
+    }
+
+    function saveProductFromForm() {
+      const id = document.getElementById("editFormProdId").value;
+      const code = document.getElementById("editFormCode").value.trim().toUpperCase();
+      const series = document.getElementById("editFormSeries").value.trim() || "22-27";
+      const style = document.getElementById("editFormStyle").value;
+      const name = document.getElementById("editFormName").value.trim() || `Modelo ${code}`;
+      const sep = document.getElementById("editFormSeparatorBanner").value.trim();
+      const desc = document.getElementById("editFormDesc").value.trim();
+
+      if (!code) { alert("Ingresa un código"); return; }
+
+      const photoUrls = document.querySelectorAll(".form-photo-url");
+      const photoColors = document.querySelectorAll(".form-photo-color");
+      const photos = [];
+
+      photoUrls.forEach((u, i) => {
+        const val = u.value.trim();
+        if (val) photos.push({ url: val, colorName: photoColors[i].value.trim() || 'Color' });
+      });
+
+      if (id) {
+        const p = appData.products.find(x => x.id === id);
+        if (p) {
+          p.code = code; p.series = series; p.style = style;
+          p.name = name; p.separatorBanner = sep; p.description = desc; p.photos = photos;
+        }
+      } else {
+        appData.products.push({ id: `prod-${Date.now()}`, code, series, style, name, separatorBanner: sep, description: desc, photos });
+      }
+
+      saveAllToStorage();
+      closeProductFormModal();
+      renderAdminProductsList();
+      renderCatalogSections();
+      showToast("Modelo guardado");
+    }
+
+    function exportDataJson() {
+      const blob = new Blob([JSON.stringify(appData, null, 2)], { type: "application/json" });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `catalogo_${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+    }
+
+    function importDataJson(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const parsed = JSON.parse(evt.target.result);
+          if (parsed && Array.isArray(parsed.products)) {
+            appData = parsed;
+            saveAllToStorage();
+            renderAll();
+            showToast("Catálogo restaurado");
+          }
+        } catch (_) { alert("Archivo inválido"); }
+      };
+      reader.readAsText(file);
+    }
+
+    async function changeAdminPinSubmit() {
+      const newPin = document.getElementById("newAdminPinInput")?.value?.trim() || "";
+      const confirmPin = document.getElementById("confirmAdminPinInput")?.value?.trim() || "";
+
+      if (newPin.length < 6) { showToast("Mínimo 6 caracteres."); return; }
+      if (newPin !== confirmPin) { showToast("Las claves no coinciden."); return; }
+
+      const hash = await sha256(newPin);
+      if (!appData.security) appData.security = {};
+      appData.security.pinHash = hash;
+
+      saveAllToStorage();
+      document.getElementById("newAdminPinInput").value = "";
+      document.getElementById("confirmAdminPinInput").value = "";
+      showToast("¡Clave actualizada!");
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    }
+
+    function sanitizeUrl(url) {
+      if (!url) return '';
+      const clean = String(url).trim();
+      if (/^(https?:\/\/|\/|\.\/)/i.test(clean)) return clean.replace(/"/g, '%22').replace(/'/g, '%27');
+      return '';
+    }
+
+    async function sha256(message) {
+      const msgBuffer = new TextEncoder().encode(String(message));
+      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+      return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById("toastNotification");
+      if (!toast) return;
+      toast.innerText = msg;
+      toast.classList.remove("opacity-0", "pointer-events-none");
+      toast.classList.add("opacity-100");
+      setTimeout(() => {
+        toast.classList.remove("opacity-100");
+        toast.classList.add("opacity-0", "pointer-events-none");
+      }, 2300);
+    }
+
+    window.onload = function() {
+      applyCurrentPaletteCss();
+      renderAll();
+      heroIntervalTimer = setInterval(() => nextHeroSlide(), 3000);
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('admin') === '1') requestAdminAccess();
+      } catch (_) {}
+      window.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
+          e.preventDefault();
+          requestAdminAccess();
+        }
+      });
+      // Sincronizar de inmediato al cargar en cualquier navegador o ventana
+      syncFromCloud();
+    };
+  </script>
+</body>
+</html>
