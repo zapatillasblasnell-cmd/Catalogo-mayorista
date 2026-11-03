@@ -767,18 +767,21 @@
       return (cloud.url && cloud.url.startsWith('http')) ? cloud.url.replace(/\/$/, '') : DEFAULT_SUPABASE_CONFIG.url;
     }
 
-    async function syncFromCloud() {
-      const supaUrl = getSupabaseUrl();
-      const headers = getSupabaseHeaders();
-      if (!supaUrl || !headers.apikey) {
+  async function syncFromCloud() {
+      const supaUrl = "https://mgbwhsrjcdotsborsgbkowm.supabase.co";
+      const key = DEFAULT_SUPABASE_CONFIG.key || localStorage.getItem('sb_anon_key') || "";
+      if (!supaUrl || !key) {
         updateCloudStatusUI('offline');
         return;
       }
 
       try {
-        const res = await fetch(`${supaUrl}/rest/v1/store_state?id=eq.main&select=*`, {
+        const res = await fetch(`${supaUrl}/rest/v1/store_state?select=*`, {
           method: 'GET',
-          headers: headers
+          headers: {
+            'apikey': key,
+            'Authorization': `Bearer ${key}`
+          }
         });
 
         if (res.ok) {
@@ -802,6 +805,9 @@
               updateCloudStatusUI('saved');
             }
           }
+        } else {
+          console.warn("Respuesta no satisfactoria de Supabase:", res.status);
+          updateCloudStatusUI('offline');
         }
       } catch (err) {
         console.debug("Modo local activo:", err);
