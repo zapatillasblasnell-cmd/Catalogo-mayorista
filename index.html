@@ -10,13 +10,29 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-  :root{--color-primary:#e11d48;--color-primary-hover:#be123c;--color-accent:#ffe4e6}
+  :root{
+    --color-primary:#e11d48;
+    --color-primary-hover:#be123c;
+    --color-accent:#ffe4e6;
+    --color-btn-cart:#2563eb;
+    --color-btn-cart-hover:#1d4ed8;
+    --color-btn-cart-text:#ffffff;
+  }
   body{font-family:'Inter',system-ui,sans-serif;-webkit-tap-highlight-color:transparent;user-select:none;background:#f1f5f9}
   input,textarea{user-select:text}
   .no-scrollbar::-webkit-scrollbar{display:none}.no-scrollbar{-ms-overflow-style:none;scrollbar-width:none}
   .dynamic-bg-primary{background-color:var(--color-primary)!important}
   .dynamic-text-primary{color:var(--color-primary)!important}
   .dynamic-border-primary{border-color:var(--color-primary)!important}
+  
+  .btn-add-cart{
+    background-color: var(--color-btn-cart) !important;
+    color: var(--color-btn-cart-text) !important;
+  }
+  .btn-add-cart:hover{
+    background-color: var(--color-btn-cart-hover) !important;
+  }
+
   .flying-ghost{position:fixed;z-index:9999;pointer-events:none;border-radius:14px;box-shadow:0 12px 30px rgba(0,0,0,.35);object-fit:cover;transition:all .72s cubic-bezier(.19,1,.22,1)}
   @keyframes shine{0%{transform:translateX(-100%) skewX(12deg)}35%,100%{transform:translateX(300%) skewX(12deg)}}
   @keyframes pulse2{0%,100%{transform:scale(1)}50%{transform:scale(1.025)}}
@@ -230,9 +246,18 @@
       </div>
       <!-- Paleta -->
       <div id="adminPane-palette" class="space-y-4 hidden">
-        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3.5">
-          <h4 class="font-extrabold text-slate-800 text-sm">Personalizar Paleta Global</h4>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3" id="paletteFields"></div>
+        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-4">
+          <div>
+            <h4 class="font-extrabold text-slate-800 text-sm">Personalizar Paleta Global</h4>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-2" id="paletteFields"></div>
+          </div>
+
+          <div class="border-t border-slate-200 pt-3">
+            <h4 class="font-extrabold text-slate-800 text-sm">Botón "+6 pares" (Agregar al pedido)</h4>
+            <p class="text-[11px] text-slate-500 mb-2">Personaliza el color exclusivo para el botón de compra en las fotos:</p>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3" id="cartBtnPaletteFields"></div>
+          </div>
+
           <div class="grid grid-cols-2 sm:grid-cols-3 gap-2" id="palettePresets"></div>
           <button type="button" onclick="saveAdminPaletteSettings()" class="w-full py-2.5 dynamic-bg-primary text-white font-bold rounded-xl active:scale-95 transition">Guardar y Aplicar Paleta</button>
         </div>
@@ -351,7 +376,10 @@ const TABS = [["products","Códigos y Modelos"],["palette","Paleta de Colores"],
 
 let appData = {
   security:{pinHash:DEFAULT_PIN_HASH},
-  palette:{primary:"#e11d48",hover:"#be123c",accent:"#ffe4e6"},
+  palette:{
+    primary:"#e11d48",hover:"#be123c",accent:"#ffe4e6",
+    cartBtnBg:"#2563eb",cartBtnHover:"#1d4ed8",cartBtnText:"#ffffff"
+  },
   branding:{logoUrl:"",promoNotice:"ZAPATILLAS DE NIÑOS IMPORTADAS AL POR MAYOR",location:"Lima, Perú — Envíos a todo el país",
     hours:"Lunes a Sábado: 9:00 am – 8:00 pm",phone:"+51997857379",
     social:{facebook:"",tiktok:"",instagram:""},
@@ -383,6 +411,24 @@ function showToast(msg){
 function togglePasswordVisibility(id,btn){
   const i=$(id); if(!i) return; const p=i.type==="password"; i.type=p?"text":"password";
   btn.innerHTML=`<i data-lucide="${p?'eye-off':'eye'}" class="w-4 h-4"></i>`; icons();
+}
+
+async function downloadSingleImage(url, filename){
+  if(!url) return;
+  showToast("Descargando imagen…");
+  try{
+    const res = await fetch(url);
+    const blob = await res.blob();
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = (filename || "zapato").replace(/[^a-zA-Z0-9_\-]/g,'_') + ".jpg";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    showToast("Imagen descargada");
+  }catch(_){
+    window.open(url, '_blank');
+  }
 }
 
 /* ================= NUBE (SUPABASE) ================= */
@@ -458,6 +504,10 @@ function applyPalette(){
   root.setProperty('--color-primary',isHex(p.primary)?p.primary:'#e11d48');
   root.setProperty('--color-primary-hover',isHex(p.hover)?p.hover:'#be123c');
   root.setProperty('--color-accent',isHex(p.accent)?p.accent:'#ffe4e6');
+  
+  root.setProperty('--color-btn-cart',isHex(p.cartBtnBg)?p.cartBtnBg:'#2563eb');
+  root.setProperty('--color-btn-cart-hover',isHex(p.cartBtnHover)?p.cartBtnHover:'#1d4ed8');
+  root.setProperty('--color-btn-cart-text',isHex(p.cartBtnText)?p.cartBtnText:'#ffffff');
 }
 function renderAll(){ applyPalette(); renderBranding(); renderHeroSlides(); renderFilterChips(); renderCatalog(); updateCartBadge(); icons(); }
 function renderBranding(){
@@ -526,10 +576,27 @@ function resetAllCatalogFilters(){ selSeries="Todas"; selStyle="Todos"; renderFi
 const LAYOUTS={1:[1],2:[2],3:[1,2],4:[1,2,1],5:[1,2,2],6:[1,2,1,2],7:[1,4,2],8:[1,4,3]};
 function photoCard(prod,ph,idx){
   const hex=isHex(ph.colorHex)?ph.colorHex:'#ffffff';
+  const downloadName = `${prod.code}_${ph.colorName||'color'}`;
   return `<div class="relative w-full overflow-hidden rounded-xl bg-slate-100 group flex items-center justify-center">
     <img id="photo-${escapeHtml(prod.id)}-${idx}" src="${sanitizeUrl(ph.url)}" alt="${escapeHtml(prod.code)} - ${escapeHtml(ph.colorName)}" loading="lazy" onclick="openProductDetailModal('${escapeHtml(prod.id)}')" class="w-full h-auto object-contain cursor-pointer transition-transform duration-300 group-hover:scale-105">
-    <div class="absolute top-2 left-2 bg-black/25 backdrop-blur-sm text-white/80 px-2 py-0.5 rounded-md text-[9px] md:text-xs font-semibold flex items-center space-x-1 pointer-events-none"><span class="w-1.5 h-1.5 rounded-full" style="background-color:${hex}"></span><span>${escapeHtml(ph.colorName||'Color')}</span></div>
-    <button type="button" onclick="addToCart('${escapeHtml(prod.id)}',${idx})" class="absolute bottom-2.5 right-2.5 dynamic-bg-primary hover:opacity-90 active:scale-95 text-white text-[11px] md:text-xs font-black px-2.5 md:px-3.5 py-1.5 md:py-2 rounded-xl shadow-md flex items-center space-x-1.5 transition z-10" title="Agregar 1 serie (6 pares)"><i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i><span>+6 pares</span></button></div>`;
+    
+    <!-- Etiqueta de color (Izquierda) -->
+    <div class="absolute top-2 left-2 bg-black/25 backdrop-blur-sm text-white/80 px-2 py-0.5 rounded-md text-[9px] md:text-xs font-semibold flex items-center space-x-1 pointer-events-none">
+      <span class="w-1.5 h-1.5 rounded-full" style="background-color:${hex}"></span>
+      <span>${escapeHtml(ph.colorName||'Color')}</span>
+    </div>
+
+    <!-- Icono sutil para descargar imagen (Esquina Superior Derecha) -->
+    <button type="button" onclick="event.stopPropagation(); downloadSingleImage('${sanitizeUrl(ph.url)}', '${escapeHtml(downloadName)}')" class="absolute top-2 right-2 w-7 h-7 md:w-8 md:h-8 rounded-full bg-black/30 hover:bg-black/60 text-white flex items-center justify-center backdrop-blur-sm transition active:scale-90 z-10 shadow-sm" title="Descargar imagen">
+      <i data-lucide="download" class="w-3.5 h-3.5 md:w-4 md:h-4"></i>
+    </button>
+
+    <!-- Botón Agregar al Carrito con estilo independiente -->
+    <button type="button" onclick="addToCart('${escapeHtml(prod.id)}',${idx})" class="btn-add-cart absolute bottom-2.5 right-2.5 active:scale-95 text-[11px] md:text-xs font-black px-2.5 md:px-3.5 py-1.5 md:py-2 rounded-xl shadow-md flex items-center space-x-1.5 transition z-10" title="Agregar 1 serie (6 pares)">
+      <i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i>
+      <span>+6 pares</span>
+    </button>
+  </div>`;
 }
 function photoGrid(prod){
   const photos=(prod.photos||[]).slice(0,8), n=photos.length;
@@ -585,10 +652,27 @@ function openProductDetailModal(id){
   const banner=sanitizeUrl(p.separatorBanner);
   const photos=(p.photos||[]).map((ph,i)=>{
     const hex=isHex(ph.colorHex)?ph.colorHex:'#ffffff';
+    const downloadName = `${p.code}_${ph.colorName||'color'}`;
     return `<div class="relative w-full overflow-hidden shadow-sm bg-slate-100 rounded-2xl flex items-center justify-center">
       <img id="detail-${escapeHtml(p.id)}-${i}" src="${sanitizeUrl(ph.url)}" alt="${escapeHtml(p.code)}" class="w-full h-auto object-contain">
-      <div class="absolute top-3 left-3 bg-black/40 backdrop-blur-sm text-white px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center space-x-1.5"><span class="w-2 h-2 rounded-full" style="background-color:${hex}"></span><span>${escapeHtml(ph.colorName||'Color')}</span></div>
-      <button type="button" onclick="addToCart('${escapeHtml(p.id)}',${i},'detail-${escapeHtml(p.id)}-${i}')" class="absolute bottom-3 right-3 dynamic-bg-primary hover:opacity-90 text-white px-3.5 py-2.5 rounded-xl shadow-lg active:scale-95 transition flex items-center space-x-1.5 font-black text-xs"><i data-lucide="shopping-cart" class="w-4 h-4"></i><span>Agregar + 6 pares</span></button></div>`;
+      
+      <!-- Etiqueta de color -->
+      <div class="absolute top-3 left-3 bg-black/40 backdrop-blur-sm text-white px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center space-x-1.5 pointer-events-none">
+        <span class="w-2 h-2 rounded-full" style="background-color:${hex}"></span>
+        <span>${escapeHtml(ph.colorName||'Color')}</span>
+      </div>
+
+      <!-- Icono sutil para descargar imagen en modal -->
+      <button type="button" onclick="downloadSingleImage('${sanitizeUrl(ph.url)}', '${escapeHtml(downloadName)}')" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/35 hover:bg-black/60 text-white flex items-center justify-center backdrop-blur-sm transition active:scale-90 z-10 shadow-sm" title="Descargar imagen">
+        <i data-lucide="download" class="w-4 h-4"></i>
+      </button>
+
+      <!-- Botón Agregar serie con estilo independiente[cite: 1] -->
+      <button type="button" onclick="addToCart('${escapeHtml(p.id)}',${i},'detail-${escapeHtml(p.id)}-${i}')" class="btn-add-cart absolute bottom-3 right-3 px-3.5 py-2.5 rounded-xl shadow-lg active:scale-95 transition flex items-center space-x-1.5 font-black text-xs">
+        <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+        <span>Agregar + 6 pares</span>
+      </button>
+    </div>`;
   }).join('');
   $("modalDetailContent").innerHTML=`
     <div class="relative w-full aspect-[16/7] md:aspect-[21/6] overflow-hidden bg-slate-800">
@@ -727,10 +811,19 @@ async function changeAdminPinSubmit(){
 /* ================= ADMIN: PANEL ================= */
 function buildAdminStatic(){
   $("adminTabsBar").innerHTML=TABS.map(([id,l])=>`<button type="button" onclick="switchAdminTab('${id}')" id="adminTabBtn-${id}" class="px-4 py-3 border-b-2 whitespace-nowrap"></button>`).join('');
-  const f=[["primary","Color Primario (botones/pastillas)"],["hover","Color Hover"],["accent","Acento Suave"]];
+  
+  // Paleta General
+  const f=[["primary","Color Primario"],["hover","Hover Primario"],["accent","Acento Suave"]];
   $("paletteFields").innerHTML=f.map(([k,l])=>`<div class="space-y-1.5 p-3 rounded-xl bg-white border border-slate-200"><label class="font-bold text-slate-700 block">${l}:</label><div class="flex items-center space-x-2">
     <input type="color" id="pal-${k}-c" class="w-9 h-9 rounded-lg border cursor-pointer shrink-0" oninput="$('pal-${k}-t').value=this.value">
     <input type="text" id="pal-${k}-t" maxlength="7" class="w-full border rounded-lg p-2 font-mono text-xs uppercase font-bold" oninput="if(isHex(this.value))$('pal-${k}-c').value=this.value"></div></div>`).join('');
+  
+  // Paleta exclusiva botón carrito
+  const fCart=[["cartBtnBg","Color Fondo"],["cartBtnHover","Color Hover"],["cartBtnText","Color Texto/Icono"]];
+  $("cartBtnPaletteFields").innerHTML=fCart.map(([k,l])=>`<div class="space-y-1.5 p-3 rounded-xl bg-white border border-slate-200"><label class="font-bold text-slate-700 block">${l}:</label><div class="flex items-center space-x-2">
+    <input type="color" id="pal-${k}-c" class="w-9 h-9 rounded-lg border cursor-pointer shrink-0" oninput="$('pal-${k}-t').value=this.value">
+    <input type="text" id="pal-${k}-t" maxlength="7" class="w-full border rounded-lg p-2 font-mono text-xs uppercase font-bold" oninput="if(isHex(this.value))$('pal-${k}-c').value=this.value"></div></div>`).join('');
+
   $("palettePresets").innerHTML=PRESETS.map(([n,a,b,c],i)=>`<button type="button" onclick="applyPreset(${i})" class="p-2.5 rounded-xl border border-slate-200 flex items-center space-x-2 hover:bg-slate-100 transition text-left"><span class="w-4 h-4 rounded-full shrink-0" style="background:${a}"></span><span class="font-bold text-[11px] text-slate-700">${n}</span></button>`).join('');
 }
 function switchAdminTab(t){
@@ -757,13 +850,33 @@ function populateAdminFields(){
   set("adminPhoneInput",b.phone||""); set("adminHoursInput",b.hours||""); set("adminLocationInput",b.location||"");
   set("adminFbInput",s.facebook||""); set("adminTtInput",s.tiktok||""); set("adminIgInput",s.instagram||"");
   set("adminAdvisor1Phone",a.adv1||""); set("adminAdvisor2Phone",a.adv2||""); set("adminAdvisor3Phone",a.adv3||"");
-  [["primary","#e11d48"],["hover","#be123c"],["accent","#ffe4e6"]].forEach(([k,d])=>{ const v=isHex(p[k])?p[k]:d; set(`pal-${k}-c`,v); set(`pal-${k}-t`,v); });
+  
+  [
+    ["primary","#e11d48"],["hover","#be123c"],["accent","#ffe4e6"],
+    ["cartBtnBg","#2563eb"],["cartBtnHover","#1d4ed8"],["cartBtnText","#ffffff"]
+  ].forEach(([k,d])=>{ 
+    const v=isHex(p[k])?p[k]:d; 
+    set(`pal-${k}-c`,v); 
+    set(`pal-${k}-t`,v); 
+  });
+  
   set("cloudSupabaseUrl",SUPABASE_PROJECT_URL);
 }
-function applyPreset(i){ const [,a,b,c]=PRESETS[i]; [["primary",a],["hover",b],["accent",c]].forEach(([k,v])=>{ $(`pal-${k}-c`).value=v; $(`pal-${k}-t`).value=v; }); saveAdminPaletteSettings(); }
+function applyPreset(i){ 
+  const [,a,b,c]=PRESETS[i]; 
+  [["primary",a],["hover",b],["accent",c]].forEach(([k,v])=>{ $(`pal-${k}-c`).value=v; $(`pal-${k}-t`).value=v; }); 
+  saveAdminPaletteSettings(); 
+}
 function saveAdminPaletteSettings(){
   const g=(k,d)=>{ const v=$(`pal-${k}-t`).value.trim(); return isHex(v)?v:d; };
-  appData.palette={primary:g('primary','#e11d48'),hover:g('hover','#be123c'),accent:g('accent','#ffe4e6')};
+  appData.palette={
+    primary:g('primary','#e11d48'),
+    hover:g('hover','#be123c'),
+    accent:g('accent','#ffe4e6'),
+    cartBtnBg:g('cartBtnBg','#2563eb'),
+    cartBtnHover:g('cartBtnHover','#1d4ed8'),
+    cartBtnText:g('cartBtnText','#ffffff')
+  };
   saveAllToStorage(); renderAll(); showToast("🎨 Paleta aplicada");
 }
 function saveAdminBrandingSettings(){
