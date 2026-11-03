@@ -1177,7 +1177,10 @@
         openAdminPanelModal();
         showToast("Acceso Concedido");
       } else {
-        if (err) err.classList.remove("hidden");
+        if (err) {
+          err.textContent = `Contraseña incorrecta. (v2 · hash ${hashed.slice(0,6)} / esperado ${targetHash.slice(0,6)})`;
+          err.classList.remove("hidden");
+        }
       }
     }
 
@@ -1406,6 +1409,7 @@
     }
 
     async function sha256(message) {
+      if (!window.crypto || !crypto.subtle) { alert("Este navegador/enlace no permite verificar la clave (se necesita https)."); throw new Error("no crypto.subtle"); }
       const msgBuffer = new TextEncoder().encode(String(message));
       const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
       return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
@@ -1424,6 +1428,14 @@
     }
 
     window.onload = async function () {
+      try {
+        if (new URLSearchParams(window.location.search).get('resetpin') === '1') {
+          const raw = localStorage.getItem(LOCAL_KEY);
+          if (raw) { const o = JSON.parse(raw); delete o.security; localStorage.setItem(LOCAL_KEY, JSON.stringify(o)); }
+          sessionStorage.removeItem('kicks_admin_auth_active');
+          showToast("PIN restablecido: usa Admin2026");
+        }
+      } catch (_) {}
       loadLocalBackup(true); // solo recuerda el PIN guardado en este navegador
       applyCurrentPaletteCss();
       renderAll();
