@@ -237,7 +237,7 @@
       <!-- Productos -->
       <div id="adminPane-products" class="space-y-4">
         <div class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/80 p-3.5 rounded-2xl flex items-center justify-between gap-2">
-          <div><span class="font-extrabold text-slate-900 block">Reordenar prioridad de códigos</span><span class="text-[10px] text-slate-500">Usa ▲ / ▼ para elegir qué modelo se muestra primero.</span></div>
+          <div><span class="font-extrabold text-slate-900 block">Reordenar y gestionar códigos</span><span class="text-[10px] text-slate-500">Usa ▲ / ▼ para priorizar o pulsa el icono de estado para apagar/encender.</span></div>
           <button type="button" onclick="openProductFormModal()" class="dynamic-bg-primary text-white font-black py-2 px-3.5 rounded-xl shrink-0 active:scale-95 transition">+ Nuevo Código</button>
         </div>
         <div id="adminProductsList" class="space-y-2.5"></div>
@@ -336,6 +336,19 @@
         <div><label class="font-bold text-slate-700">Estilo:</label><select id="editFormStyle" class="w-full border rounded-xl p-2 font-bold bg-white"><option>Deportivo</option><option>Urbano</option><option>Treking</option><option>Blanco</option></select></div>
         <div><label class="font-bold text-slate-700">Nombre descriptivo:</label><input type="text" id="editFormName" maxlength="60" class="w-full border rounded-xl p-2"></div>
       </div>
+
+      <!-- Opcion de Encendido / Apagado -->
+      <div class="bg-slate-50 border border-slate-200 p-2.5 rounded-xl flex items-center justify-between">
+        <div>
+          <span class="font-extrabold text-slate-800 block">Mostrar código en el catálogo</span>
+          <span class="text-[10px] text-slate-500">Si lo desactivas, se oculta del público pero se guarda aquí.</span>
+        </div>
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input type="checkbox" id="editFormActive" class="sr-only peer" checked>
+          <div class="w-10 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+        </label>
+      </div>
+
       <div><label class="font-bold text-slate-700">Banner Separador (URL imagen):</label><input type="url" id="editFormSeparatorBanner" placeholder="https://..." class="w-full border rounded-xl p-2 font-mono text-[11px]"></div>
       <div><label class="font-bold text-slate-700">Descripción:</label><textarea id="editFormDesc" rows="2" maxlength="300" class="w-full border rounded-xl p-2"></textarea></div>
       <div class="border-t border-slate-200 pt-3 space-y-2">
@@ -548,8 +561,15 @@ function matchSeries(txt){
 }
 function renderFilterChips(){
   const sc={}, tc={}; SERIES.forEach(s=>sc[s.id]=0); STYLES.forEach(s=>tc[s.id]=0);
-  appData.products.forEach(p=>{ sc.Todas++; const m=matchSeries(p.series); if(sc[m]!==undefined) sc[m]++;
-    tc.Todos++; const f=STYLES.find(s=>s.id.toLowerCase()===(p.style||"").toLowerCase()); if(f) tc[f.id]++; });
+  const activeProducts = appData.products.filter(p=>p.active!==false);
+  activeProducts.forEach(p=>{ 
+    sc.Todas++; 
+    const m=matchSeries(p.series); 
+    if(sc[m]!==undefined) sc[m]++;
+    tc.Todos++; 
+    const f=STYLES.find(s=>s.id.toLowerCase()===(p.style||"").toLowerCase()); 
+    if(f) tc[f.id]++; 
+  });
   $("seriesChipsContainer").innerHTML=SERIES.map(it=>{
     const sel=selSeries===it.id;
     return `<button type="button" onclick="selectSeriesFilter('${it.id}')" class="group relative shrink-0 px-3.5 py-2 rounded-2xl transition-all duration-200 flex items-center space-x-2 active:scale-95 border ${sel?'dynamic-bg-primary text-white border-transparent shadow-md -translate-y-0.5':'bg-white hover:bg-slate-50 text-slate-700 border-slate-200'}">
@@ -609,14 +629,17 @@ function photoGrid(prod){
 }
 function renderCatalog(){
   const c=$("catalogSectionsContainer"), empty=$("emptyCatalogBox");
+  // Filtra solo los productos activos (encendidos)
   const list=appData.products.filter(p=>{
+    if(p.active===false) return false;
     const a=selSeries==="Todas"||p.series===selSeries||matchSeries(p.series)===selSeries;
     const b=selStyle==="Todos"||(p.style||"").toLowerCase()===selStyle.toLowerCase();
     return a&&b;
   });
   if(!list.length){
     c.innerHTML=""; empty.classList.remove("hidden");
-    empty.innerHTML=appData.products.length===0
+    const totalActivos = appData.products.filter(p=>p.active!==false).length;
+    empty.innerHTML=totalActivos===0
       ? `<div class="w-16 h-16 rounded-3xl bg-slate-100 text-slate-400 mx-auto flex items-center justify-center"><i data-lucide="package-plus" class="w-8 h-8"></i></div><p class="text-sm font-black text-slate-800 uppercase">Catálogo en preparación</p><p class="text-xs text-slate-500 max-w-xs mx-auto">Pronto verás aquí nuestras colecciones mayoristas.</p>`
       : `<div class="w-16 h-16 rounded-full bg-slate-100 text-slate-400 mx-auto flex items-center justify-center"><i data-lucide="package-x" class="w-8 h-8"></i></div><p class="text-sm font-bold text-slate-800">No hay modelos con este filtro</p><p class="text-xs text-slate-500 max-w-xs mx-auto">Prueba otra serie o estilo.</p><button type="button" onclick="resetAllCatalogFilters()" class="bg-slate-900 text-white text-xs font-bold py-2.5 px-5 rounded-xl hover:bg-slate-800 active:scale-95 transition">Ver todo el catálogo</button>`;
     icons(); return;
@@ -897,36 +920,68 @@ function renderAdminProductsList(){
   c.innerHTML=L.map((p,i)=>{
     const thumb=sanitizeUrl((p.photos&&p.photos[0]&&p.photos[0].url)||p.separatorBanner), n=(p.photos||[]).length;
     const first=i===0, last=i===L.length-1;
-    return `<div class="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-2xl">
+    const isActive = p.active !== false;
+
+    return `<div class="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-2xl transition ${isActive?'':'opacity-60 bg-slate-50/80'}">
       <div class="flex items-center space-x-2.5 min-w-0">
         <div class="flex flex-col items-center space-y-1 shrink-0 bg-slate-100 p-1 rounded-xl">
           <button type="button" onclick="moveProductOrder(${i},-1)" ${first?'disabled':''} class="w-6 h-6 rounded-lg font-black ${first?'text-slate-300':'text-slate-700 hover:bg-white active:scale-90'}">▲</button>
           <span class="text-[10px] font-black font-mono text-slate-500">#${i+1}</span>
           <button type="button" onclick="moveProductOrder(${i},1)" ${last?'disabled':''} class="w-6 h-6 rounded-lg font-black ${last?'text-slate-300':'text-slate-700 hover:bg-white active:scale-90'}">▼</button></div>
         ${thumb?`<img src="${thumb}" class="w-12 h-14 object-cover rounded-xl border border-slate-100 shrink-0" alt="">`:''}
-        <div class="min-w-0"><div class="flex items-center flex-wrap gap-1.5"><span class="font-black text-sm text-slate-900">${escapeHtml(p.code)}</span><span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-rose-50 dynamic-text-primary">Tallas ${escapeHtml(p.series)}</span><span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">${escapeHtml(p.style)}</span></div>
-          <p class="text-[11px] text-slate-500 truncate">${escapeHtml(p.name||'Sin nombre')}</p><p class="text-[10px] text-slate-400">${n} ${n===1?'foto':'fotos'}</p></div></div>
+        <div class="min-w-0">
+          <div class="flex items-center flex-wrap gap-1.5">
+            <span class="font-black text-sm text-slate-900">${escapeHtml(p.code)}</span>
+            <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full ${isActive?'bg-emerald-50 text-emerald-700':'bg-slate-200 text-slate-600'}">${isActive?'● Visible':'○ Apagado'}</span>
+            <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-rose-50 dynamic-text-primary">Tallas ${escapeHtml(p.series)}</span>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">${escapeHtml(p.style)}</span>
+          </div>
+          <p class="text-[11px] text-slate-500 truncate">${escapeHtml(p.name||'Sin nombre')}</p>
+          <p class="text-[10px] text-slate-400">${n} ${n===1?'foto':'fotos'}</p>
+        </div>
+      </div>
       <div class="flex items-center space-x-1 shrink-0 pl-1">
+        <!-- Botón Toggle Rápido Prender / Apagar -->
+        <button type="button" onclick="toggleProductActive('${escapeHtml(p.id)}')" class="p-2 rounded-xl transition ${isActive?'text-emerald-600 hover:bg-emerald-50':'text-slate-400 hover:bg-slate-200'}" title="${isActive?'Apagar del catálogo':'Encender en el catálogo'}">
+          <i data-lucide="${isActive?'eye':'eye-off'}" class="w-4 h-4"></i>
+        </button>
         <button type="button" onclick="openProductFormModal('${escapeHtml(p.id)}')" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl active:scale-95 transition">Editar</button>
-        <button type="button" onclick="deleteProduct('${escapeHtml(p.id)}')" class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></div>`;
+        <button type="button" onclick="deleteProduct('${escapeHtml(p.id)}')" class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+      </div>
+    </div>`;
   }).join('');
   icons();
+}
+function toggleProductActive(id){
+  const p=appData.products.find(x=>x.id===id);
+  if(!p) return;
+  p.active = (p.active === false) ? true : false;
+  saveAllToStorage();
+  renderAdminProductsList();
+  renderFilterChips();
+  renderCatalog();
+  showToast(p.active ? "Código encendido en catálogo" : "Código apagado (oculto)");
 }
 function moveProductOrder(i,d){
   const j=i+d, L=appData.products; if(j<0||j>=L.length) return;
   [L[i],L[j]]=[L[j],L[i]]; saveAllToStorage(); renderAdminProductsList(); renderFilterChips(); renderCatalog();
 }
 function deleteProduct(id){
-  if(!confirm("¿Eliminar este código del catálogo?")) return;
+  if(!confirm("¿Eliminar este código del catálogo permanentemente?")) return;
   appData.products=appData.products.filter(p=>p.id!==id); saveAllToStorage(); renderAdminProductsList(); renderFilterChips(); renderCatalog();
 }
 function openProductFormModal(id=null){
   const box=$("formPhotosContainer"); box.innerHTML="";
   const p=id?appData.products.find(x=>x.id===id):null; if(id&&!p) return;
   $("productFormModalTitle").textContent=p?`Editar ${p.code}`:"Registrar Nuevo Código";
-  $("editFormProdId").value=p?p.id:""; $("editFormCode").value=p?p.code:""; $("editFormSeries").value=p?p.series:"22-27";
-  $("editFormStyle").value=p?p.style:"Deportivo"; $("editFormName").value=p?(p.name||""):"";
-  $("editFormSeparatorBanner").value=p?(p.separatorBanner||""):""; $("editFormDesc").value=p?(p.description||""):"";
+  $("editFormProdId").value=p?p.id:""; 
+  $("editFormCode").value=p?p.code:""; 
+  $("editFormSeries").value=p?p.series:"22-27";
+  $("editFormStyle").value=p?p.style:"Deportivo"; 
+  $("editFormName").value=p?(p.name||""):"";
+  $("editFormActive").checked=p?(p.active!==false):true;
+  $("editFormSeparatorBanner").value=p?(p.separatorBanner||""):""; 
+  $("editFormDesc").value=p?(p.description||""):"";
   if(p&&p.photos&&p.photos.length) p.photos.forEach(ph=>addPhotoRowToForm(ph.url,ph.colorName,ph.colorHex)); else addPhotoRowToForm();
   $("productFormModal").classList.remove("hidden"); icons();
 }
@@ -947,14 +1002,24 @@ function saveProductFromForm(){
   if(!code){ alert("Ingresa un código para el calzado."); return; }
   const series=$("editFormSeries").value.trim()||"22-27", style=$("editFormStyle").value;
   const name=$("editFormName").value.trim()||`Modelo ${code}`, sep=sanitizeUrl($("editFormSeparatorBanner").value), desc=$("editFormDesc").value.trim();
+  const active=$("editFormActive").checked;
   const photos=[];
   document.querySelectorAll("#formPhotosContainer > div").forEach((row,i)=>{
     const u=sanitizeUrl(row.querySelector(".form-photo-url").value); if(!u) return;
     photos.push({url:u,colorName:row.querySelector(".form-photo-color").value.trim()||`Color ${i+1}`,colorHex:row.querySelector(".form-photo-hex").value});
   });
-  if(id){ const p=appData.products.find(x=>x.id===id); if(p) Object.assign(p,{code,series,style,name,separatorBanner:sep,description:desc,photos}); }
-  else appData.products.push({id:`prod-${Date.now()}`,code,series,style,name,separatorBanner:sep,description:desc,photos});
-  saveAllToStorage(); closeProductFormModal(); renderAdminProductsList(); renderFilterChips(); renderCatalog(); showToast("Modelo guardado");
+  if(id){ 
+    const p=appData.products.find(x=>x.id===id); 
+    if(p) Object.assign(p,{code,series,style,name,active,separatorBanner:sep,description:desc,photos}); 
+  } else {
+    appData.products.push({id:`prod-${Date.now()}`,code,series,style,name,active,separatorBanner:sep,description:desc,photos});
+  }
+  saveAllToStorage(); 
+  closeProductFormModal(); 
+  renderAdminProductsList(); 
+  renderFilterChips(); 
+  renderCatalog(); 
+  showToast("Modelo guardado");
 }
 
 /* ================= RESPALDO ================= */
