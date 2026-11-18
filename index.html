@@ -887,34 +887,6 @@ function flatPhotoCard(prod, ph, originalIdx, isGrid3){
         </button>`}
   </div>`;
 }
-function flatPhotoCard(prod, ph, originalIdx, isGrid3){
-  const hex = isHex(ph.colorHex) ? ph.colorHex : '#ffffff';
-  const downloadName = `${prod.code}_${ph.colorName||'color'}`;
-  const imgId = `photo-${escapeHtml(prod.id)}-${originalIdx}`;
-  const badgePadding = isGrid3 ? 'px-1.5 py-0.5 text-[8px] sm:text-[10px]' : 'px-2.5 py-1 text-[10px] sm:text-xs';
-  const btnPadding = isGrid3 ? 'px-1.5 py-1 text-[9px] sm:text-[11px] bottom-1.5 right-1.5 rounded-lg' : 'px-3 py-1.5 text-xs bottom-2.5 right-2.5 rounded-xl';
-  const iconSize = isGrid3 ? 'w-2.5 h-2.5 sm:w-3 sm:h-3' : 'w-3.5 h-3.5';
-
-  return `<div class="relative w-full overflow-hidden rounded-xl bg-slate-100 group flex items-center justify-center border border-slate-200/70 shadow-2xs">
-    <img id="${imgId}" src="${sanitizeUrl(ph.url)}" alt="${escapeHtml(prod.code)} - ${escapeHtml(ph.colorName)}" loading="lazy" onclick="openProductDetailModal('${escapeHtml(prod.id)}')" class="w-full h-auto object-contain cursor-pointer transition-transform duration-300 group-hover:scale-105">
-    
-    <!-- Etiqueta Código + Serie + Color -->
-    <div class="absolute top-1.5 left-1.5 max-w-[76%] bg-black/65 backdrop-blur-sm text-white ${badgePadding} rounded-md font-extrabold flex items-center space-x-1 pointer-events-none leading-tight">
-      <span class="w-1.5 h-1.5 rounded-full shrink-0" style="background-color:${hex}"></span>
-      <span class="truncate">${escapeHtml(prod.code)} • ${escapeHtml(prod.series)} • ${escapeHtml(ph.colorName||'Color')}</span>
-    </div>
-
-    ${!isGrid3 ? `<button type="button" onclick="event.stopPropagation(); downloadSingleImage('${sanitizeUrl(ph.url)}', '${escapeHtml(downloadName)}', '${imgId}')" class="absolute top-2 right-2 w-9 h-9 md:w-10 md:h-10 rounded-full bg-black/45 hover:bg-black/75 text-white flex items-center justify-center backdrop-blur-sm border border-white/25 transition active:scale-90 z-10 shadow-md" title="Descargar imagen">
-      <i data-lucide="download" class="w-4 h-4 md:w-5 md:h-5 download-nudge"></i>
-    </button>` : ''}
-
-    <!-- Botón +6 pares -->
-    <button type="button" onclick="addToCart('${escapeHtml(prod.id)}',${originalIdx})" class="btn-add-cart absolute ${btnPadding} active:scale-95 font-black shadow-md flex items-center space-x-1 transition z-10" title="Agregar 1 serie (6 pares)">
-      <i data-lucide="shopping-cart" class="${iconSize}"></i>
-      <span>+6 pares</span>
-    </button>
-  </div>`;
-}
 function photoGrid(prod){
   const activePhotosWithIdx = (prod.photos||[])
     .map((ph, idx) => ({ ...ph, originalIdx: idx }))
