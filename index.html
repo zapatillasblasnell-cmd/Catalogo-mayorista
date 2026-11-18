@@ -819,12 +819,11 @@ function resetAllCatalogFilters(){ selSeries="Todas"; selStyle="Todos"; renderFi
 
 /* ================= CATÁLOGO ================= */
 const LAYOUTS={1:[1],2:[2],3:[1,2],4:[1,2,1],5:[1,2,2],6:[1,2,1,2],7:[1,4,2],8:[1,4,3]};
-function soldOutDiagonalRibbon(isCompact){
-  const textSize = isCompact ? 'text-[9px] sm:text-xs py-1' : 'text-xs sm:text-sm md:text-base py-1.5';
-  return `<div class="absolute inset-0 bg-slate-900/25 backdrop-blur-[0.5px] flex items-center justify-center pointer-events-none z-10 overflow-hidden">
-    <div class="w-[150%] bg-red-600/95 text-white font-black uppercase tracking-[0.22em] text-center shadow-lg border-y border-white/40 -rotate-25 ${textSize} select-none">
+function soldOutDiagonalRibbon(){
+  return `<div class="absolute inset-0 flex items-center justify-center pointer-events-none z-10 overflow-hidden">
+    <span class="text-[#ff0000] font-black uppercase tracking-[0.06em] -rotate-[38deg] text-[14cqw] leading-none select-none drop-shadow-[0_2px_6px_rgba(255,255,255,0.75)]">
       AGOTADO
-    </div>
+    </span>
   </div>`;
 }
 function photoCard(prod,ph,originalIdx){
@@ -832,10 +831,10 @@ function photoCard(prod,ph,originalIdx){
   const downloadName = `${prod.code}_${ph.colorName||'color'}`;
   const imgId = `photo-${escapeHtml(prod.id)}-${originalIdx}`;
   const isSoldOut = Boolean(prod.soldOut || ph.soldOut);
-  return `<div class="relative w-full overflow-hidden rounded-xl bg-slate-100 group flex items-center justify-center">
-    <img id="${imgId}" src="${sanitizeUrl(ph.url)}" alt="${escapeHtml(prod.code)} - ${escapeHtml(ph.colorName)}" loading="lazy" onclick="openProductDetailModal('${escapeHtml(prod.id)}')" class="w-full h-auto object-contain cursor-pointer transition-transform duration-300 ${isSoldOut ? 'opacity-50 grayscale-[35%]' : 'group-hover:scale-105'}">
+  return `<div style="container-type:inline-size" class="relative w-full overflow-hidden rounded-xl bg-slate-100 group flex items-center justify-center">
+    <img id="${imgId}" src="${sanitizeUrl(ph.url)}" alt="${escapeHtml(prod.code)} - ${escapeHtml(ph.colorName)}" loading="lazy" onclick="openProductDetailModal('${escapeHtml(prod.id)}')" class="w-full h-auto object-contain cursor-pointer transition-transform duration-300 ${isSoldOut ? 'opacity-85' : 'group-hover:scale-105'}">
     
-    ${isSoldOut ? soldOutDiagonalRibbon(false) : ''}
+    ${isSoldOut ? soldOutDiagonalRibbon() : ''}
 
     <!-- Etiqueta de color (Izquierda) -->
     <div class="absolute top-2 left-2 bg-black/35 backdrop-blur-sm text-white/90 px-2 py-0.5 rounded-md text-[9px] md:text-xs font-semibold flex items-center space-x-1 pointer-events-none z-20">
@@ -865,10 +864,10 @@ function flatPhotoCard(prod, ph, originalIdx, isGrid3){
   const btnPadding = isGrid3 ? 'px-1.5 py-1 text-[9px] sm:text-[11px] bottom-1.5 right-1.5 rounded-lg' : 'px-3 py-1.5 text-xs bottom-2.5 right-2.5 rounded-xl';
   const iconSize = isGrid3 ? 'w-2.5 h-2.5 sm:w-3 sm:h-3' : 'w-3.5 h-3.5';
 
-  return `<div class="relative w-full overflow-hidden rounded-xl bg-slate-100 group flex items-center justify-center border border-slate-200/70 shadow-2xs">
-    <img id="${imgId}" src="${sanitizeUrl(ph.url)}" alt="${escapeHtml(prod.code)} - ${escapeHtml(ph.colorName)}" loading="lazy" onclick="openProductDetailModal('${escapeHtml(prod.id)}')" class="w-full h-auto object-contain cursor-pointer transition-transform duration-300 ${isSoldOut ? 'opacity-50 grayscale-[35%]' : 'group-hover:scale-105'}">
+  return `<div style="container-type:inline-size" class="relative w-full overflow-hidden rounded-xl bg-slate-100 group flex items-center justify-center border border-slate-200/70 shadow-2xs">
+    <img id="${imgId}" src="${sanitizeUrl(ph.url)}" alt="${escapeHtml(prod.code)} - ${escapeHtml(ph.colorName)}" loading="lazy" onclick="openProductDetailModal('${escapeHtml(prod.id)}')" class="w-full h-auto object-contain cursor-pointer transition-transform duration-300 ${isSoldOut ? 'opacity-85' : 'group-hover:scale-105'}">
     
-    ${isSoldOut ? soldOutDiagonalRibbon(isGrid3) : ''}
+    ${isSoldOut ? soldOutDiagonalRibbon() : ''}
 
     <!-- Etiqueta Código + Serie + Color -->
     <div class="absolute top-1.5 left-1.5 max-w-[76%] bg-black/65 backdrop-blur-sm text-white ${badgePadding} rounded-md font-extrabold flex items-center space-x-1 pointer-events-none leading-tight z-20">
@@ -1008,9 +1007,9 @@ function openProductDetailModal(id){
       const i = ph.originalIdx;
       const detailImgId = `detail-${escapeHtml(p.id)}-${i}`;
       const isSoldOut = Boolean(p.soldOut || ph.soldOut);
-      return `<div class="relative w-full overflow-hidden shadow-sm bg-slate-100 rounded-2xl flex items-center justify-center">
-        <img id="${detailImgId}" src="${sanitizeUrl(ph.url)}" alt="${escapeHtml(p.code)}" class="w-full h-auto object-contain ${isSoldOut ? 'opacity-50 grayscale-[35%]' : ''}">
-        ${isSoldOut ? soldOutDiagonalRibbon(false) : ''}
+      return `<div style="container-type:inline-size" class="relative w-full overflow-hidden shadow-sm bg-slate-100 rounded-2xl flex items-center justify-center">
+        <img id="${detailImgId}" src="${sanitizeUrl(ph.url)}" alt="${escapeHtml(p.code)}" class="w-full h-auto object-contain ${isSoldOut ? 'opacity-85' : ''}">
+        ${isSoldOut ? soldOutDiagonalRibbon() : ''}
         <div class="absolute top-3 left-3 bg-black/45 backdrop-blur-sm text-white px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center space-x-1.5 pointer-events-none z-20">
           <span class="w-2 h-2 rounded-full" style="background-color:${hex}"></span>
           <span>${escapeHtml(ph.colorName||'Color')}</span>
